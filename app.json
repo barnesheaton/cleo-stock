@@ -2,7 +2,7 @@
   "name": "Cleo",
   "description": "Description",
   "image": "heroku/python",
-  "repository": "",
+  "repository": "https://github.com/barnesheaton/cleo-stock",
   "keywords": ["python", "django" ],
   "addons": [ "heroku-postgresql" ],
   "env": {
