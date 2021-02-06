@@ -16,13 +16,20 @@ class User(db.Model):
         rq_job = current_app.task_queue.enqueue('app.tasks.' + name, *args, **kwargs)
         task = Task(id=rq_job.get_id(), name=name)
         db.session.add(task)
+        db.session.commit()
         return task
+
+    def get_all_tasks(self):
+        return Task.query.all()
 
     def get_tasks_in_progress(self):
         return Task.query.filter_by(complete=False).all()
+    
+    def get_tasks_completed(self):
+        return Task.query.filter_by(complete=True).all()
 
-    def get_task_in_progress(self, name):
-        return Task.query.filter_by(name=name, complete=False).first()
+    def get_task(self, name):
+        return Task.query.filter_by(name=name).first()
 
 
 class Task(db.Model):
@@ -30,6 +37,9 @@ class Task(db.Model):
     name = db.Column(db.String(128), index=True)
     description = db.Column(db.String(128))
     complete = db.Column(db.Boolean, default=False)
+
+    def __repr__(self):
+        return f"Task - ${self.name} Complete => [${self.complete}]"
 
     def get_rq_job(self):
         try:
@@ -41,3 +51,17 @@ class Task(db.Model):
     def get_progress(self):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
+
+class Stock(db.Model):
+    id = db.Column(db.String(36), primary_key=True)
+    ticker=db.Column(db.String(128))
+    date = db.Column(db.String(128))
+    open = db.Column(db.Float())
+    high = db.Column(db.Float())
+    low = db.Column(db.Float())
+    close = db.Column(db.Float())
+    adj_close = db.Column(db.Float())
+    volume = db.Column(db.Float())
+
+    def __repr__(self):
+        return f"Stock - ${self.ticker} - ${self.date}"

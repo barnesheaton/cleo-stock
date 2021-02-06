@@ -1,17 +1,29 @@
-<html>
+{% extends "bootstrap/base.html" %}
 
-<head>
-    {% if title %}
-    <title>{{ title }} - Microblog</title>
-    {% else %}
-    <title>Welcome to Cleo</title>
-    {% endif %}
-</head>
+{% block title %}
+Welcome to Cleo
+{% endblock %}
 
-<body>
-    <div>Cleo: <a href="/index">Home</a><a href="/login">Login</a></div>
-    <hr>
-    {% block content %}{% endblock %}
-</body>
+{% block navbar %}
+<nav class="navbar navbar-default bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">Cleo</a>
+        <div class="collapse navbar-collapse" id="navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/simulations">Simulations</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/predictions">Predictions</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}
 
-</html>
+{% block content %}
+<div class="container">
+    {% block app_content %}{% endblock %}
+</div>
+{% endblock %}

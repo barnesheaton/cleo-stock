@@ -1,5 +1,29 @@
 {% extends "base.html" %}
 
-{% block content %}
-<h3>Home</h3>
+{% block app_content %}
+<h3>Tasks In Progress</h3>
+{% with tasks = session.get_tasks_in_progress() %}
+{% if tasks %}
+{% for task in tasks %}
+<div>
+    {{ task.name }}
+    <span id="{{ task.id }}-progress">{{ task.get_progress() }}</span>%
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+{% with completed_tasks = session.get_tasks_completed() %}
+{% if completed_tasks %}
+{% for task in completed_tasks %}
+<div>
+    {{ task.name }}
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+<form action="" method="post" novalidate>
+    <p>{{ form.submit() }}</p>
+</form>
 {% endblock %}

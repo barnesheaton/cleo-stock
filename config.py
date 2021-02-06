@@ -2,6 +2,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
+    FLASK_APP = os.environ.get('FLASK_APP') or 'cleo.py'
     REDIS_URL = os.environ.get('REDIS_URL') or 'localhost'
     REDIS_PORT = os.environ.get('REDIS_PORT') or 6379
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'secret'
