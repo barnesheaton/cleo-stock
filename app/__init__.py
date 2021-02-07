@@ -4,7 +4,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_bootstrap import Bootstrap
 
-
 import redis
 import rq
 import os
@@ -15,7 +14,8 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bootstrap = Bootstrap(app)
 
-from app import routes, models
+from app import routes
+from app.models.task import Task
 
 def create_app(config_class=Config):
     db.init_app(app)
@@ -25,4 +25,4 @@ def create_app(config_class=Config):
 
 @app.shell_context_processor
 def make_shell_context():
-    return {'db': db, 'Task': models.Task}
+    return {'db': db, 'Task': Task}
