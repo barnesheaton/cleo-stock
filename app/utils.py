@@ -1,4 +1,4 @@
-import modin.pandas as pd
+import pandas as pd
 from pathlib import Path
 from functools import reduce
 import numpy as np
