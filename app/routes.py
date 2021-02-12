@@ -4,14 +4,18 @@ from app.forms import QueueForm
 from app.session import Session
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
 def index():
     session = Session()
     form = QueueForm()
+    form2 = QueueForm()
 
     if form.is_submitted():
         session.launch_task('example', 42)
 
-    return render_template('index.html', title='Home', form=form, session=session)
+    if form2.is_submitted():
+        session.populateBarsTable(period="1Y", tickers=False)
+
+    return render_template('index.html', title='Home', form=form, form2=form2, session=session)
 

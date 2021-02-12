@@ -2,8 +2,9 @@ from flask import current_app
 from app import db
 import redis
 import rq
-from app.models.task import Task
+from app.models import Task
 import yfinance as yf
+from app import utils
 
 class Session():
     def launch_task(self, name, *args, **kwargs):
@@ -13,9 +14,19 @@ class Session():
         db.session.commit()
         return task
 
-    def updateStockDB(self, tickers, period, *args, **kwargs):
-        dataframe = yf.download(tickers=tickers, period=period, group_by="ticker")
-        return dataframe
+    def populateBarsTable(self, tickers, period, *args, start=0, end=100, **kwargs):
+        ticker_list, ticker_string  = utils.getTickerList(start=start, end=end, tickers=tickers)
+        yf_df = yf.download(tickers=ticker_string, period=period, group_by="ticker")
+
+        for ticker in ticker_list:
+            df = yf_df.dropna() if (len(ticker_list) == 1) else yf_df[ticker].dropna()
+            if df.shape[0] <= 10:
+                continue
+            df.insert(0, "Ticker", ticker, True)
+            # df.columns = df.columns.str.strip()
+            df = df.rename(columns={"Adj Close": "adj_close"})
+            df.to_sql('bar', con=db.engine, if_exists='append')
+
 
     def get_all_tasks(self):
         return Task.query.all()

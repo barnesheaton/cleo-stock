@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-<h3>In Progress</h3>
+<!-- <h3>In Progress</h3>
 {% with tasks = session.get_tasks_in_progress() %}
 {% if tasks %}
 {% for task in tasks %}
@@ -22,9 +22,13 @@
 </div>
 {% endfor %}
 {% endif %}
-{% endwith %}
+{% endwith %} -->
 
 <form action="" method="post" novalidate>
     <p>{{ form.submit() }}</p>
+</form>
+
+<form action="" method="post" novalidate>
+    <p>{{ form2.submit() }}</p>
 </form>
 {% endblock %}
