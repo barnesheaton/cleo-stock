@@ -23,8 +23,8 @@ class Session():
             if df.shape[0] <= 10:
                 continue
             df.insert(0, "Ticker", ticker, True)
-            # df.columns = df.columns.str.strip()
             df = df.rename(columns={"Adj Close": "adj_close"})
+            df.columns = df.columns.str.lower()
             df.to_sql('bar', con=db.engine, if_exists='append')
 
 
