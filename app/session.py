@@ -25,7 +25,7 @@ class Session():
             df.insert(0, "Ticker", ticker, True)
             df = df.rename(columns={"Adj Close": "adj_close"})
             df.columns = df.columns.str.lower()
-            df.to_sql('bar', con=db.engine, if_exists='append')
+            df.to_sql('bar', con=db.engine, if_exists='append', index_label="date")
 
 
     def get_all_tasks(self):
