@@ -1,2 +1,2 @@
-web: gunicorn main.wsgi --log-file -
-worker: python app.worker.py
+web: flask db upgrade; flask translate compile; gunicorn cleo:app
+worker: rq worker -u $REDIS_URL cleo-tasks
