@@ -4,7 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_bootstrap import Bootstrap
 
-import redis
+# import redis
+from redis import Redis
 import rq
 import os
 
@@ -19,7 +20,8 @@ from app.models import Task, Bar
 
 def create_app(config_class=Config):
     db.init_app(app)
-    app.redis = redis.StrictRedis(app.config['REDIS_URL'], app.config['REDIS_PORT'], 0)
+    app.redis = Redis.from_url(app.config['REDIS_URL'])
+    # app.redis = redis.StrictRedis(app.config['REDIS_URL'], app.config['REDIS_PORT'], 0)
     app.task_queue = rq.Queue('cleo-tasks', connection=app.redis)
     return app
 
