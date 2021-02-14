@@ -23,17 +23,17 @@ class Task(db.Model):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
 
-class Simulation(db.Model):
-    id = db.Column(db.String(36), primary_key=True)
-    starting_capital = db.Column(db.Float())
-    ending_capital = db.Column(db.Float())
-    simulation_period = db.Column(db.Integer())
-    # settings = db.Column(db.Json())
+# class Simulation(db.Model):
+#     id = db.Column(db.String(36), primary_key=True)
+#     starting_capital = db.Column(db.Float())
+#     ending_capital = db.Column(db.Float())
+#     simulation_period = db.Column(db.Integer())
+#     # settings = db.Column(db.Json())
 
 class Bar(db.Model):
-    id = db.Column(db.Integer(), primary_key=True)
-    ticker = db.Column(db.String(128))
-    date = db.Column(db.String(128))
+    # id = db.Column(db.Integer(), primary_key=True)
+    # ticker = db.Column(db.String(128))
+    date = db.Column(db.String(128), primary_key=True)
     open = db.Column(db.Float())
     high = db.Column(db.Float())
     low = db.Column(db.Float())
@@ -44,17 +44,17 @@ class Bar(db.Model):
     def __repr__(self):
         return f"Bar: [{self.ticker}] || Date: [{self.date}] || Close: [{self.close}]"
 
-class PredictedStock(db.Model):
-    prediction_id = db.Column(db.String(36), primary_key=True)
-    ticker = db.Column(db.String(128))
-    date = db.Column(db.String(128))
-    open = db.Column(db.Float())
-    high = db.Column(db.Float())
-    low = db.Column(db.Float())
-    close = db.Column(db.Float())
-    adj_close = db.Column(db.Float())
-    volume = db.Column(db.Float())
+# class PredictedStock(db.Model):
+#     prediction_id = db.Column(db.String(36), primary_key=True)
+#     ticker = db.Column(db.String(128))
+#     date = db.Column(db.String(128))
+#     open = db.Column(db.Float())
+#     high = db.Column(db.Float())
+#     low = db.Column(db.Float())
+#     close = db.Column(db.Float())
+#     adj_close = db.Column(db.Float())
+#     volume = db.Column(db.Float())
 
-class Transaction(db.Model):
-    id = db.Column(db.String(36), primary_key=True)
-    ticker = db.Column(db.String(128))
+# class Transaction(db.Model):
+#     id = db.Column(db.String(36), primary_key=True)
+#     ticker = db.Column(db.String(128))

@@ -1,6 +1,5 @@
-from app import app
-from flask import render_template, current_app
-from app.forms import QueueForm
+from flask import render_template
+from app.forms import UpdateStockDataForm
 from app.session import Session
 
 
@@ -8,14 +7,10 @@ from app.session import Session
 @app.route('/index', methods=['GET', 'POST'])
 def index():
     session = Session()
-    form = QueueForm()
-    form2 = QueueForm()
+    updateForm = UpdateStockDataForm()
 
-    if form.is_submitted():
-        session.launch_task('example', 42)
+    if updateForm.is_submitted():
+        session.launch_task('updateTickerTablesTask', period=updateForm.period.data, start=updateForm.start.data, end=updateForm.end.data)
 
-    if form2.is_submitted():
-        session.populateBarsTable(period="1Y", tickers=False)
-
-    return render_template('index.html', title='Home', form=form, form2=form2, session=session)
+    return render_template('index.html', title='Home', updateForm=updateForm, session=session)
 

@@ -24,11 +24,21 @@
 {% endif %}
 {% endwith %} -->
 
-<form action="" method="post" novalidate>
+<!-- <form action="" method="post" novalidate>
     <p>{{ form.submit() }}</p>
-</form>
+</form> -->
 
 <form action="" method="post" novalidate>
-    <p>{{ form2.submit() }}</p>
+    <p>
+        {{ updateForm.start(size=32) }}
+    </p>
+    <p>
+        {{ updateForm.end(size=32) }}
+    </p>
+    <p>
+        {{ updateForm.period(size=32) }}
+    </p>
+    <p>{{ updateForm.submit() }}</p>
 </form>
+
 {% endblock %}
