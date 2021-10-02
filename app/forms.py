@@ -7,7 +7,7 @@ class QueueForm(FlaskForm):
 
 
 class UpdateStockDataForm(FlaskForm):
-    start = DecimalField('Start Index')
+    start = DecimalField('Start Index', places=0)
     end = DecimalField('End Index')
     period = StringField('Period')
     submit = SubmitField('Update')

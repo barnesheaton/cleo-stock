@@ -1,5 +1,6 @@
-from flask import render_template
-from app.forms import UpdateStockDataForm
+from app import app, db
+from flask import render_template, current_app
+from app.forms import QueueForm, UpdateStockDataForm
 from app.session import Session
 
 
@@ -10,7 +11,7 @@ def index():
     updateForm = UpdateStockDataForm()
 
     if updateForm.is_submitted():
-        session.launch_task('updateTickerTablesTask', period=updateForm.period.data, start=updateForm.start.data, end=updateForm.end.data)
+        session.launch_task('updateTickerTablesTask', period=updateForm.period.data, start=int(updateForm.start.data), end=int(updateForm.end.data))
 
     return render_template('index.html', title='Home', updateForm=updateForm, session=session)
 

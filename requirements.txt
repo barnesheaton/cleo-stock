@@ -1,7 +1,7 @@
 Flask_Bootstrap==3.3.7.1
 redis==3.5.3
 rq==1.7.0
-yfinance==0.1.54
+yfinance==0.1.63
 pandas==1.0.5
 WTForms==2.3.3
 Flask_SQLAlchemy==2.4.4

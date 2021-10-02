@@ -34,7 +34,7 @@ def upgrade():
         table_name = ticker.lower()
         op.create_table(table_name,
             sa.Column('id', sa.Integer(), nullable=False),
-            sa.Column('date', sa.DateTime(), nullable=True),
+            sa.Column('date', sa.Date(), nullable=True),
             sa.Column('open', sa.Float(), nullable=True),
             sa.Column('high', sa.Float(), nullable=True),
             sa.Column('low', sa.Float(), nullable=True),
@@ -43,7 +43,7 @@ def upgrade():
             sa.Column('volume', sa.Float(), nullable=True),
             sa.PrimaryKeyConstraint('id')
         )
-        op.create_index(op.f(f"ix_{table_name}_bar_date"), table_name, ['date'], unique=False)
+        op.create_index(op.f(f"ix_{table_name}_bar_date"), table_name, ['date'], unique=True)
 
 
 
