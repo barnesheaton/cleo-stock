@@ -103,16 +103,16 @@ def getPredictions(model, dataframe, possible_outcomes, prediction_period=10):
     for index in range(0, prediction_period):
         data = getFeatures(p_dataframe)
 
-        high_price = p_dataframe.iloc[-1]['High']
+        high_price = p_dataframe.iloc[-1]['high']
         # low_price = p_dataframe.iloc[-1]['Low']
-        open_price = p_dataframe.iloc[-1]['Open']
-        close_price = p_dataframe.iloc[-1]['Close']
+        open_price = p_dataframe.iloc[-1]['open']
+        close_price = p_dataframe.iloc[-1]['close']
 
         # 20% chance of flipping the sign of the prediciton
         # mutiplier = -1 if np.random.pareto(1) > 1.2 else 1
         mutiplier = 1
         bands = analysis.getBollingerBandWidths(
-            p_dataframe['Close'].to_numpy())
+            p_dataframe['close'].to_numpy())
         delta_open, delta_close, _ = getPredictedFeatures(
             model,
             data,
@@ -136,12 +136,12 @@ def getPredictions(model, dataframe, possible_outcomes, prediction_period=10):
         predicted_close = predicted_open * (1 + (delta_close * mutiplier))
 
         p_dataframe = pd.concat([p_dataframe, pd.DataFrame({
-            'Open': [predicted_open],
-            'High': [0],
-            'Low': [0],
-            'Close': [predicted_close],
-            'Adj Close': [0],
-            'Volume': [0],
+            'open': [predicted_open],
+            'high': [0],
+            'low': [0],
+            'close': [predicted_close],
+            'adj _close': [0],
+            'volume': [0],
         })])
 
     return p_dataframe
@@ -157,8 +157,8 @@ def getPredictedFeatures(model, data, possible_outcomes):
 
 
 def getFeatures(dataframe):
-    open_price = np.array(dataframe['Open'])
-    close_price = np.array(dataframe['Close'])
+    open_price = np.array(dataframe['open'])
+    close_price = np.array(dataframe['close'])
 
     delta_open = (open_price[1:] - close_price[0:-1]) / close_price[0:-1]
     frac_change = (close_price - open_price) / open_price
@@ -185,6 +185,6 @@ def plotPredictedCloses(predictions, verifications, ticker):
     axes = fig.add_subplot(111)
 
     axes.plot(range(predictions.shape[0]),
-              predictions['Close'], '--', color='red')
+              predictions['close'], '--', color='red')
     axes.plot(
-        range(verifications.shape[0]), verifications['Close'], color='black', alpha=0.5)
+        range(verifications.shape[0]), verifications['close'], color='black', alpha=0.5)
