@@ -15,14 +15,15 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bootstrap = Bootstrap(app)
 
-from app import routes
-from app.models import Task, Bar
+from cleoapp import routes
+from cleoapp.models import Task, Bar
 
 def create_app(config_class=Config):
     db.init_app(app)
     app.redis = Redis.from_url(app.config['REDIS_URL'])
     # app.redis = redis.StrictRedis(app.config['REDIS_URL'], app.config['REDIS_PORT'], 0)
     app.task_queue = rq.Queue('cleo-tasks', connection=app.redis)
+    # default_worker.work(burst=True)
     return app
 
 @app.shell_context_processor
