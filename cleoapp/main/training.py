@@ -14,9 +14,9 @@ import sys
 import warnings
 import itertools
 
-from app.main.database import Database
-import app.main.utils as utils
-import app.main.analysis as analysis
+from cleoapp.main.database import Database
+import cleoapp.main.utils as utils
+import cleoapp.main.analysis as analysis
 
 from hmmlearn.hmm import GaussianHMM
 
