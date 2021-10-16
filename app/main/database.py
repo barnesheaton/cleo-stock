@@ -1,8 +1,8 @@
 import pandas as pd
 import yfinance as yf
-from cleoapp import db
+from app import db
 import sys
-import cleoapp.main.utils as utils
+import app.main.utils as utils
 from sqlalchemy import Table, MetaData
 
 

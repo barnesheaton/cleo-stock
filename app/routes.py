@@ -1,8 +1,8 @@
 import os
-from cleoapp import app, db
+from app import app, db
 from flask import render_template, current_app, url_for
-from cleoapp.forms import QueueForm, UpdateStockDataForm, TrainModelForm
-from cleoapp.session import Session
+from app.forms import QueueForm, UpdateStockDataForm, TrainModelForm
+from app.session import Session
 
 models_dir = os.path.join(app.instance_path, 'models')
 os.makedirs(models_dir, exist_ok=True)

@@ -1,5 +1,5 @@
 from flask import current_app
-from cleoapp import db
+from app import db
 import redis
 import rq
 

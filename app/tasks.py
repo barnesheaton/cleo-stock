@@ -2,9 +2,9 @@ import time
 import pickle
 import os
 from rq import get_current_job
-from cleoapp.main.database import Database
-from cleoapp.main.training import trainModel
-from cleoapp import app
+from app.main.database import Database
+from app.main.training import trainModel
+from app import app
 
 def updateTickerTablesTask(*args, **kwargs):
     database = Database()

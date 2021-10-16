@@ -7,7 +7,7 @@ Create Date: 2021-02-13 08:52:18.952810
 """
 from alembic import op
 import sqlalchemy as sa
-import cleoapp.main.utils as utils
+import app.main.utils as utils
 
 
 # revision identifiers, used by Alembic.
