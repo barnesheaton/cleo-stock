@@ -12,5 +12,3 @@ class UpdateStockDataForm(FlaskForm):
     period = StringField('Period')
     submit = SubmitField('Update')
 
-class TrainModelForm(FlaskForm):
-    submit = SubmitField('Train Model')
