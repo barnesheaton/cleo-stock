@@ -15,11 +15,29 @@ import warnings
 import itertools
 
 from app.main.database import Database
-
-import analysis
-import utils
+import app.main.utils as utils
+import app.main.analysis as analysis
 
 from hmmlearn.hmm import GaussianHMM
+
+def trainModel():
+    dataframe = getTrainingData()
+    X = getFeatures(dataframe)
+    model = GaussianHMM(n_components=3, covariance_type="full", n_iter=20)
+    model.fit(X)
+    return model
+
+def getTrainingData():
+    ticker_list, _ = utils.getTickerList()
+    dataframe = pd.DataFrame()
+    for index, ticker in enumerate(ticker_list):
+        db_has_table = Database().connection.dialect.has_table(Database().connection, ticker.lower())
+        if (index % 2 == 0) & db_has_table:
+            print("Adding table to training data from DB", ticker)
+            dataframe = pd.concat([dataframe, Database().getTickerData(ticker.lower())])
+
+    return dataframe
+
 
 # Saving a Model should be bound with predicted features
 
