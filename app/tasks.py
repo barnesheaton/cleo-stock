@@ -20,7 +20,8 @@ def updateTickerTablesTask(*args, **kwargs):
     database = Database()
     database.updateTickerTables(*args, **kwargs)
 
-# def trainModelTask(*args, **kwargs):
+def trainModelTask(*args, **kwargs):
+    print('Starting task')
 #     model = trainModel()
 #     filename = 'test_file_one'
 #     # outfile = open(os.path.join(app.config['MODELS_DR'], filename), 'wb')
