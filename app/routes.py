@@ -4,9 +4,9 @@ from flask import render_template, current_app, url_for
 from app.forms import QueueForm, UpdateStockDataForm, TrainModelForm
 from app.session import Session
 
-# models_dir = os.path.join(app.instance_path, 'models')
-# os.makedirs('uploads', exist_ok=True)
-# app.config['MODELS_DR'] = models_dir
+models_dir = os.path.join(app.instance_path, 'models')
+os.makedirs('uploads', exist_ok=True)
+app.config['MODELS_DR'] = models_dir
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
