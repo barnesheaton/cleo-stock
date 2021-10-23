@@ -14,44 +14,30 @@ import sys
 import warnings
 import itertools
 
-from app.main.database import Database
 import app.main.utils as utils
 import app.main.analysis as analysis
 
 from hmmlearn.hmm import GaussianHMM
 
-def trainModel():
-    dataframe = getTrainingData()
+def trainModel(dataframe):
     X = getFeatures(dataframe)
     model = GaussianHMM(n_components=3, covariance_type="full", n_iter=20)
     model.fit(X)
     return model
 
-def getTrainingData():
-    ticker_list, _ = utils.getTickerList()
-    dataframe = pd.DataFrame()
-    for index, ticker in enumerate(ticker_list):
-        db_has_table = Database().connection.dialect.has_table(Database().connection, ticker.lower())
-        if (index % 2 == 0) & db_has_table:
-            print("Adding table to training data from DB", ticker)
-            dataframe = pd.concat([dataframe, Database().getTickerData(ticker.lower())])
-
-    return dataframe
-
-
 # Saving a Model should be bound with predicted features
 
-def getTickerOutlook(model, possible_outcomes, ticker="AAPL"):
-    # update to read form our DB
-    dataframe = Database().getTickerData(ticker)
-    dataframe = yf.download(tickers=ticker, period="max", group_by="ticker")
+# def getTickerOutlook(model, possible_outcomes, ticker="AAPL"):
+#     # update to read form our DB
+#     dataframe = Database().getTickerData(ticker)
+#     dataframe = yf.download(tickers=ticker, period="max", group_by="ticker")
 
-    getPredictions(
-        model,
-        dataframe,
-        possible_outcomes=possible_outcomes,
-        prediction_period=prediction_period
-    )
+#     getPredictions(
+#         model,
+#         dataframe,
+#         possible_outcomes=possible_outcomes,
+#         prediction_period=prediction_period
+#     )
 
 
 def runVerfication(
@@ -140,7 +126,7 @@ def getPredictions(model, dataframe, possible_outcomes, prediction_period=10):
             'high': [0],
             'low': [0],
             'close': [predicted_close],
-            'adj _close': [0],
+            'adj_close': [0],
             'volume': [0],
         })])
 

@@ -5,7 +5,7 @@ from app.forms import QueueForm, UpdateStockDataForm, TrainModelForm
 from app.session import Session
 
 models_dir = os.path.join(app.instance_path, 'models')
-os.makedirs(models_dir, exist_ok=True)
+os.makedirs('uploads', exist_ok=True)
 app.config['MODELS_DR'] = models_dir
 
 @app.route('/', methods=['GET', 'POST'])
