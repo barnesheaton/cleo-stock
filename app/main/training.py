@@ -1,17 +1,17 @@
 from tqdm import tqdm
 import yfinance as yf
-import tensorflow as tf
-import modin.pandas as pd
+# import tensorflow as tf
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import datetime as dt
-import math
-import mplcursors
-import os
-import pickle
-import requests
-import sys
-import warnings
+# import datetime as dt
+# import math
+# import mplcursors
+# import os
+# import pickle
+# import requests
+# import sys
+# import warnings
 import itertools
 
 import app.main.utils as utils
