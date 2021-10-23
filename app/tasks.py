@@ -1,7 +1,7 @@
 import time
 from rq import get_current_job
 from app.main.database import Database
-# from app.main.training import trainModel
+from app.main.training import trainModel
 # from app import app
 
 def example(seconds):
@@ -21,8 +21,10 @@ def updateTickerTablesTask(*args, **kwargs):
     database.updateTickerTables(*args, **kwargs)
 
 def trainModelTask(*args, **kwargs):
-    print('Starting task')
-#     model = trainModel()
+    print('trainModelTask')
+    database = Database()
+    dataframe = database.getTrainingData()
+    model = trainModel(dataframe)
 #     filename = 'test_file_one'
 #     # outfile = open(os.path.join(app.config['MODELS_DR'], filename), 'wb')
 #     # pickle.dump(model, outfile)
