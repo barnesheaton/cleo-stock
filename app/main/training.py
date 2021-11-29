@@ -22,7 +22,8 @@ from app.main.database import Database
 
 from hmmlearn.hmm import GaussianHMM
 
-def trainModel():
+def trainModel(arg):
+    print("Train Model", arg)
     dataframe = getTrainingData()
     X = getFeatures(dataframe)
     model = GaussianHMM(n_components=3, covariance_type="full", n_iter=20)
@@ -52,22 +53,22 @@ def simulate(
     principal=10000,
     diversification=5
 ):
-    model="model_1.pkl",
+    model="model_1.pkl"
     utils.printLine("Simulation")
     print(start_date, "===>", end_date)
     print('diversification', diversification)
     print('principal', principal)
     print('prediction_period', prediction_period)
     print('lookback_period', lookback_period)
-    # model_path = os.path.join(app.config['MODELS_DR'], model)
-    # loaded_model = pickle.load(open(model_path, 'rb'))
-    # possible_outcomes = getPossibleOutcomes()
-    # table="aame"
-    # dataframe = Database().getTickerData(table)
-    # p_df = getPredictions(model=loaded_model, dataframe=dataframe, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
-    # print('data', dataframe.tail(prediction_period))
-    # print('predicitons', p_df.tail(prediction_period * 2))
-    # getMaxDiffInPrediction(p_df, prediction_period=prediction_period)
+    model_path = os.path.join(app.config['MODELS_DR'], model)
+    loaded_model = pickle.load(open(model_path, 'rb'))
+    possible_outcomes = getPossibleOutcomes()
+    table="aame"
+    dataframe = Database().getTickerData(table)
+    p_df = getPredictions(model=loaded_model, dataframe=dataframe, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
+    print('data', dataframe.tail(prediction_period))
+    print('predicitons', p_df.tail(prediction_period * 2))
+    getMaxDiffInPrediction(p_df, prediction_period=prediction_period)
     return
 
 def getMaxDiffInPrediction(dataframe, prediction_period=14):

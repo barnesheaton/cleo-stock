@@ -17,8 +17,8 @@ class TrainModelForm(FlaskForm):
 class SimulateForm(FlaskForm):
     start_date = StringField(label='Start Date', render_kw={"placeholder": "Start Date"})
     end_date = StringField(label='End Date', render_kw={"placeholder": "End Date"})
-    principal = DecimalField(label='Starting Principal', render_kw={"placeholder": "Starting Principal"})
-    lookback = DecimalField(label='Lookback Period', render_kw={"placeholder": "Lookback Period"})
+    principal = DecimalField(label='Starting Principal', places=0, render_kw={"placeholder": "Starting Principal"})
+    lookback = DecimalField(label='Lookback Period', places=0 , render_kw={"placeholder": "Lookback Period"})
     lookahead = DecimalField(label='Prediction Period', render_kw={"placeholder": "Prediction Period"})
     diversification = DecimalField(label='Purchasing Spread', render_kw={"placeholder": "Purchasing Spread"})
-    submit = SubmitField(label=None)
+    submit = SubmitField()

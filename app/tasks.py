@@ -12,8 +12,7 @@ def updateTickerTablesTask(*args, **kwargs):
     Database().updateTickerTables(*args, **kwargs)
     
 def simulateTask(*args, **kwargs):
-    print("simulateTask")
-    # simulate(*args, **kwargs)
+    simulate(*args, **kwargs)
 
 def trainModelTask(*args, **kwargs):
     database = Database()

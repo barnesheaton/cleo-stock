@@ -3,13 +3,28 @@
 {% block app_content %}
 
 <form action="" method="post" novalidate>
-
-    {% for field in simulateForm %}
-    <div>
-        <div>{{ field.label }} {% if field.flags.required %}*{% endif %}</div>
-        <div>{{ field }}</div>
-    </div>
-    {% endfor %}
+    <p>
+        {{ simulateForm.start_date() }}
+    </p>
+    <p>
+        {{ simulateForm.end_date() }}
+    </p>
+    <p>
+        {{ simulateForm.principal(size=32) }}
+    </p>
+    <p>
+        {{ simulateForm.principal(size=32) }}
+    </p>
+    <p>
+        {{ simulateForm.lookback(size=32) }}
+    </p>
+    <p>
+        {{ simulateForm.lookahead(size=32) }}
+    </p>
+    <p>
+        {{ simulateForm.diversification(size=32) }}
+    </p>
+    <p>{{ simulateForm.submit() }}</p>
 </form>
 
 {% endblock %}
