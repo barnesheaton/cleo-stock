@@ -4,19 +4,21 @@ import tensorflow as tf
 import modin.pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import datetime as dt
-import math
-import mplcursors
+# import datetime as dt
+# import math
+# import mplcursors
 import os
 import pickle
-import requests
-import sys
-import warnings
+# import requests
+# import sys
+# import warnings
 import itertools
 
-from app.main.database import Database
+from app import app
+
 import app.main.utils as utils
 import app.main.analysis as analysis
+from app.main.database import Database
 
 from hmmlearn.hmm import GaussianHMM
 
@@ -41,18 +43,46 @@ def getTrainingData():
 
 # Saving a Model should be bound with predicted features
 
-def getTickerOutlook(model, possible_outcomes, ticker="AAPL"):
-    # update to read form our DB
-    dataframe = Database().getTickerData(ticker)
-    dataframe = yf.download(tickers=ticker, period="max", group_by="ticker")
+def simulate(
+    # model,
+    lookback_period=0,
+    prediction_period=14,
+    start_date="2019-01-01",
+    end_date="2021-01-01",
+    principal=10000,
+    diversification=5
+):
+    model="model_1.pkl",
+    utils.printLine("Simulation")
+    print(start_date, "===>", end_date)
+    print('diversification', diversification)
+    print('principal', principal)
+    print('prediction_period', prediction_period)
+    print('lookback_period', lookback_period)
+    # model_path = os.path.join(app.config['MODELS_DR'], model)
+    # loaded_model = pickle.load(open(model_path, 'rb'))
+    # possible_outcomes = getPossibleOutcomes()
+    # table="aame"
+    # dataframe = Database().getTickerData(table)
+    # p_df = getPredictions(model=loaded_model, dataframe=dataframe, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
+    # print('data', dataframe.tail(prediction_period))
+    # print('predicitons', p_df.tail(prediction_period * 2))
+    # getMaxDiffInPrediction(p_df, prediction_period=prediction_period)
+    return
 
-    getPredictions(
-        model,
-        dataframe,
-        possible_outcomes=possible_outcomes,
-        prediction_period=prediction_period
-    )
+def getMaxDiffInPrediction(dataframe, prediction_period=14):
+    start = dataframe.iloc[((-prediction_period) - 1)]['open']
+    end = dataframe.iloc[-1]['close']
+    return end - start
 
+def getPossibleOutcomes(n_steps_delta_open=20, n_steps_delta_close=20, n_steps_rsis=80):
+    delta_open_range = np.linspace(-0.2, 0.2, n_steps_delta_open)
+    delta_close_range = np.linspace(-0.2, 0.2, n_steps_delta_close)
+    rsis_range = np.linspace(1, 100, n_steps_rsis)
+
+    return np.array(list(itertools.product(delta_open_range, delta_close_range, rsis_range)))
+
+# def orderPredictions():
 
 def runVerfication(
     model,
@@ -125,10 +155,10 @@ def getPredictions(model, dataframe, possible_outcomes, prediction_period=10):
         hit_lower_band = close_price <= (bands['lower'][-1] * 1.04)
 
         if hit_upper_band and delta_close >= 0:
-            print("Hit UPPER band")
+            # print("Hit UPPER band")
             mutiplier = -0.5
         if hit_lower_band and delta_close <= 0:
-            print("Hit LOWER band")
+            # print("Hit LOWER band")
             mutiplier = -0.5
 
         predicted_open = close_price * (1 + (delta_open))

@@ -2,4 +2,14 @@
 
 {% block app_content %}
 
+<form action="" method="post" novalidate>
+
+    {% for field in simulateForm %}
+    <div>
+        <div>{{ field.label }} {% if field.flags.required %}*{% endif %}</div>
+        <div>{{ field }}</div>
+    </div>
+    {% endfor %}
+</form>
+
 {% endblock %}
