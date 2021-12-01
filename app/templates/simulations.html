@@ -1,25 +1,14 @@
 {% extends "base.html" %}
 
-{% block scripts %}
-  {{ super() }}
-  {{ datepicker.loader() }}
-  {# to load jQuery-ui #}
-  {{ datepicker.picker(id=".dp") }}
-{% endblock %}
-
 {% block app_content %}
   <form action="" method="post" novalidate="novalidate">
-    <input type="text" class="form-control dp"/>
+    <div>Start Date</div>
+    {{ simulateForm.start_date(class='datepicker') }}
+    {{ simulateForm.hidden_tag() }}
 
-    <input type="text" class="form-control dp"/>
-    <input>
-
-    <p>
-      {{ simulateForm.start_date() }}
-    </p>
-    <p>
-      {{ simulateForm.end_date() }}
-    </p>
+    <div>End Date</div>
+    {{ simulateForm.end_date(class='datepicker') }}
+    {{ simulateForm.hidden_tag() }}
 
     <p>
       {{ simulateForm.principal(size=32) }}

@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, DecimalField
+from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired
 
 class QueueForm(FlaskForm):
@@ -15,8 +16,8 @@ class TrainModelForm(FlaskForm):
     submit = SubmitField('Train Model')
 
 class SimulateForm(FlaskForm):
-    start_date = StringField(label='Start Date', render_kw={"placeholder": "Start Date"})
-    end_date = StringField(label='End Date', render_kw={"placeholder": "End Date"})
+    start_date = DateField()
+    end_date = DateField()
     principal = DecimalField(label='Starting Principal', places=0, render_kw={"placeholder": "Starting Principal"})
     lookback = DecimalField(label='Lookback Period', places=0 , render_kw={"placeholder": "Lookback Period"})
     lookahead = DecimalField(label='Prediction Period', render_kw={"placeholder": "Prediction Period"})
