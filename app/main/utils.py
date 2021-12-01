@@ -3,6 +3,15 @@ from pathlib import Path
 from functools import reduce
 import numpy as np
 
+def lowerList(list):
+    result = list
+    for i in range(len(list)):
+        result[i] = result[i].lower()
+    return result
+
+def intersection(lst1, lst2):
+    lst3 = [value.lower() for value in lowerList(lst1) if value in lowerList(lst2)]
+    return lst3
 
 def printLine(title=''):
     print(f"\n--------------------- {title} -----------------------\n")

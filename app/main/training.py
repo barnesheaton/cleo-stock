@@ -5,13 +5,8 @@ import modin.pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 # import datetime as dt
-# import math
-# import mplcursors
 import os
 import pickle
-# import requests
-# import sys
-# import warnings
 import itertools
 
 from app import app
@@ -53,23 +48,26 @@ def simulate(
     principal=10000,
     diversification=5
 ):
+    list = Database().getTickerTablesList()
+
     utils.printLine("Simulation")
     print(start_date, "===>", end_date)
     print('diversification', diversification)
     print('principal', principal)
     print('prediction_period', prediction_period)
     print('lookback_period', lookback_period)
-    model_path = os.path.join(app.config['MODELS_DR'], model)
-    loaded_model = pickle.load(open(model_path, 'rb'))
-    possible_outcomes = getPossibleOutcomes()
-    table="aame"
-    dataframe = Database().getTickerData(table)
-    p_df = getPredictions(model=loaded_model, dataframe=dataframe, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
-    print('data', dataframe.tail(prediction_period))
-    print('predicitons', p_df.tail(prediction_period * 2))
-    getMaxDiffInPrediction(p_df, prediction_period=prediction_period)
+    # model_path = os.path.join(app.config['MODELS_DR'], model)
+    # loaded_model = pickle.load(open(model_path, 'rb'))
+    # possible_outcomes = getPossibleOutcomes()
+    # table="aame"
+    # dataframe = Database().getTickerData(table)
+    # p_df = getPredictions(model=loaded_model, dataframe=dataframe, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
+    # print('data', dataframe.tail(prediction_period))
+    # print('predicitons', p_df.tail(prediction_period * 2))
+    # getMaxDiffInPrediction(p_df, prediction_period=prediction_period)
     return
 
+# TODO update to find MAX diff, not diff between start and end
 def getMaxDiffInPrediction(dataframe, prediction_period=14):
     start = dataframe.iloc[((-prediction_period) - 1)]['open']
     end = dataframe.iloc[-1]['close']

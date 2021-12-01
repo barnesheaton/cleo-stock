@@ -52,5 +52,10 @@ class Database():
             )
             metadata.create_all()
 
+    def getTickerTablesList(self):
+        tickers, _ = utils.getTickerList()
+        tables = self.connection.table_names()
+        return utils.intersection(tickers, tables)
+
     def getTickerData(self, table):
         return pd.read_sql_table(table, self.connection)
