@@ -45,7 +45,7 @@ def getTrainingData():
 # Saving a Model should be bound with predicted features
 
 def simulate(
-    # model,
+    model="model_1.pkl",
     lookback_period=0,
     prediction_period=14,
     start_date="2019-01-01",
@@ -53,7 +53,6 @@ def simulate(
     principal=10000,
     diversification=5
 ):
-    model="model_1.pkl"
     utils.printLine("Simulation")
     print(start_date, "===>", end_date)
     print('diversification', diversification)

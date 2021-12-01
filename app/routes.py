@@ -36,7 +36,6 @@ def simulations():
     simulateForm = SimulateForm()
 
     if simulateForm.is_submitted():
-        print("is_submitted")
         session.launch_task(
             'simulateTask',
             lookback_period=int(simulateForm.lookback.data),
@@ -44,7 +43,7 @@ def simulations():
             start_date=simulateForm.start_date.data,
             end_date=simulateForm.end_date.data,
             principal=int(simulateForm.principal.data),
-            diversification=int(simulateForm.diversificatio.data)
+            diversification=int(simulateForm.diversification.data)
         )
 
     return render_template('simulations.html', title='Simulate', simulateForm=simulateForm, session=session)
