@@ -3,6 +3,7 @@ from app import app, db
 from flask import render_template, current_app, url_for
 from app.forms import QueueForm, UpdateStockDataForm, TrainModelForm, SimulateForm
 from app.session import Session
+from flask import request, redirect, flash
 
 models_dir = os.path.join(app.instance_path, 'models')
 os.makedirs(models_dir, exist_ok=True)
@@ -35,7 +36,7 @@ def simulations():
     session = Session()
     simulateForm = SimulateForm()
 
-    if simulateForm.is_submitted():
+    if request.method == 'POST' and simulateForm.validate():
         session.launch_task(
             'simulateTask',
             lookback_period=int(simulateForm.lookback.data),

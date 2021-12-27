@@ -1,28 +1,24 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-  <form action="" method="post" novalidate="novalidate">
-    <div>Start Date</div>
-    {{ simulateForm.start_date(class='datepicker') }}
-    {{ simulateForm.hidden_tag() }}
+  <div class="container" id="simulation">
+    {% from "_formhelpers.html" import render_field %}
 
-    <div>End Date</div>
-    {{ simulateForm.end_date(class='datepicker') }}
-    {{ simulateForm.hidden_tag() }}
+    <form method="post" novalidate="novalidate" class="form">
+      {{ simulateForm.csrf_token }}
+      {{ simulateForm.hidden_tag() }}
+      <div class="row">
 
-    <p>
-      {{ simulateForm.principal(size=32) }}
-    </p>
-    <p>
-      {{ simulateForm.lookback(size=32) }}
-    </p>
-    <p>
-      {{ simulateForm.lookahead(size=32) }}
-    </p>
-    <p>
-      {{ simulateForm.diversification(size=32) }}
-    </p>
-    <p>{{ simulateForm.submit() }}</p>
-  </form>
-
+        <div class="form-group">
+          {{ render_field(simulateForm.start_date) }}
+        </div>
+        <div class="form-group">
+          {{ render_field(simulateForm.end_date) }}
+        </div>
+      </div>
+      <div class="form-group">
+        {{ simulateForm.submit(class="btn btn-primary")}}
+      </div>
+    </form>
+  </div>
 {% endblock %}

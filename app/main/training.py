@@ -48,9 +48,12 @@ def simulate(
     principal=10000,
     diversification=5
 ):
-    list = Database().getTickerTablesList()
-
     utils.printLine("Simulation")
+    tickerList = Database().getTickerTablesList()
+
+    for ticker in tickerList:
+        print(ticker)
+
     print(start_date, "===>", end_date)
     print('diversification', diversification)
     print('principal', principal)

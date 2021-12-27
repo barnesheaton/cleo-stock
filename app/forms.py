@@ -16,8 +16,8 @@ class TrainModelForm(FlaskForm):
     submit = SubmitField('Train Model')
 
 class SimulateForm(FlaskForm):
-    start_date = DateField()
-    end_date = DateField()
+    start_date = DateField(validators=[DataRequired()])
+    end_date = DateField(validators=[DataRequired()])
     principal = DecimalField(label='Starting Principal', places=0, render_kw={"placeholder": "Starting Principal"})
     lookback = DecimalField(label='Lookback Period', places=0 , render_kw={"placeholder": "Lookback Period"})
     lookahead = DecimalField(label='Prediction Period', render_kw={"placeholder": "Prediction Period"})

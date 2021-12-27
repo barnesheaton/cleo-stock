@@ -16,7 +16,6 @@ def intersection(lst1, lst2):
 def printLine(title=''):
     print(f"\n--------------------- {title} -----------------------\n")
 
-
 def loadModelSettings(model_name):
     df = pd.read_csv(f"models/{model_name}.settings.csv")
     dictionary = df.to_dict(orient="index")
