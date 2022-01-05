@@ -4,7 +4,7 @@ import tensorflow as tf
 import modin.pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-# import datetime as dt
+from datetime import datetime, timedelta
 import os
 import pickle
 import itertools
@@ -50,15 +50,28 @@ def simulate(
 ):
     utils.printLine("Simulation")
     tickerList = Database().getTickerTablesList()
+    currentDay = start_date
 
-    for ticker in tickerList:
-        print(ticker)
+    # TODO Add ticker list the model was trained on to model specs and just remove those tickers from simluations instead of doing odds and evens
+    # 
+    dataframe = Database().getTickerDataByDates('aame', start_date, end_date)
+    print(dataframe)
+    
+    while currentDay <= end_date:
+        print(currentDay)
+        currentDay = currentDay + timedelta(days=1)
+        # for ticker in tickerList:
+        # dataframe.iloc[]
+        # print(dataframe)
+        
 
     print(start_date, "===>", end_date)
     print('diversification', diversification)
     print('principal', principal)
     print('prediction_period', prediction_period)
     print('lookback_period', lookback_period)
+    # print('lookback_period', currentDay)
+    # print('lookback_period', end_date)
     # model_path = os.path.join(app.config['MODELS_DR'], model)
     # loaded_model = pickle.load(open(model_path, 'rb'))
     # possible_outcomes = getPossibleOutcomes()

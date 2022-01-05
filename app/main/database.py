@@ -59,3 +59,8 @@ class Database():
 
     def getTickerData(self, table):
         return pd.read_sql_table(table, self.connection)
+
+    def getTickerDataByDates(self, table, start, end):
+        print("getTickerDataByDates", start, end)
+        # WHERE date >= {start} AND date <= {end}
+        return pd.read_sql(sql=f"SELECT * FROM {table}  WHERE {table}.date >= '{start.strftime('%Y-%m-%d %H:%M:%S.%f')}' AND {table}.date <= '{end.strftime('%Y-%m-%d %H:%M:%S.%f')}'", con=self.connection)
