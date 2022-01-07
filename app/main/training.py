@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import yfinance as yf
-import tensorflow as tf
-import modin.pandas as pd
+# import tensorflow as tf
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
@@ -17,25 +17,11 @@ from app.main.database import Database
 
 from hmmlearn.hmm import GaussianHMM
 
-def trainModel(arg):
-    print("Train Model", arg)
-    dataframe = getTrainingData()
+def trainModel(dataframe):
     X = getFeatures(dataframe)
     model = GaussianHMM(n_components=3, covariance_type="full", n_iter=20)
     model.fit(X)
     return model
-
-def getTrainingData():
-    ticker_list, _ = utils.getTickerList()
-    dataframe = pd.DataFrame()
-    for index, ticker in enumerate(ticker_list):
-        db_has_table = Database().connection.dialect.has_table(Database().connection, ticker.lower())
-        if (index % 2 == 0) & db_has_table:
-            print("Adding table to training data from DB", ticker)
-            dataframe = pd.concat([dataframe, Database().getTickerData(ticker.lower())])
-
-    return dataframe
-
 
 # Saving a Model should be bound with predicted features
 def simulate(
@@ -90,6 +76,18 @@ def getPossibleOutcomes(n_steps_delta_open=20, n_steps_delta_close=20, n_steps_r
     rsis_range = np.linspace(1, 100, n_steps_rsis)
 
     return np.array(list(itertools.product(delta_open_range, delta_close_range, rsis_range)))
+    
+# def getTickerOutlook(model, possible_outcomes, ticker="AAPL"):
+#     # update to read form our DB
+#     dataframe = Database().getTickerData(ticker)
+#     dataframe = yf.download(tickers=ticker, period="max", group_by="ticker")
+
+#     getPredictions(
+#         model,
+#         dataframe,
+#         possible_outcomes=possible_outcomes,
+#         prediction_period=prediction_period
+#     )
 
 # def orderPredictions():
 
