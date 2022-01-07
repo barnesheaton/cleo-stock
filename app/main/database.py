@@ -12,6 +12,17 @@ class Database():
     def __init__(self):
         self.connection = db.engine
 
+    def getTrainingData(self):
+        ticker_list, _ = utils.getTickerList()
+        dataframe = pd.DataFrame()
+        for index, ticker in enumerate(ticker_list):
+            db_has_table = self.connection.dialect.has_table(self.connection, ticker.lower())
+            # Take every other ticker table to seperate training data from test data
+            if (index % 2 == 0) & db_has_table:
+                dataframe = pd.concat([dataframe, self.getTickerData(ticker.lower())])
+
+        return dataframe
+
     def updateTickerTables(self, period, start=0, end=100):
         ticker_list, ticker_string = utils.getTickerList(start=start, end=end, tickers=False)
         yf_df = yf.download(tickers=ticker_string, period=period, group_by="ticker")

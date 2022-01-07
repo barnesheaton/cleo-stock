@@ -6,7 +6,7 @@ from app.session import Session
 from flask import request, redirect, flash
 
 models_dir = os.path.join(app.instance_path, 'models')
-os.makedirs(models_dir, exist_ok=True)
+os.makedirs('uploads', exist_ok=True)
 app.config['MODELS_DR'] = models_dir
 
 @app.route('/', methods=['GET', 'POST'])
