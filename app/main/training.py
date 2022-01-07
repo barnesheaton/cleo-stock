@@ -38,7 +38,6 @@ def getTrainingData():
 
 
 # Saving a Model should be bound with predicted features
-
 def simulate(
     model="model_1.pkl",
     lookback_period=0,
@@ -49,39 +48,34 @@ def simulate(
     diversification=5
 ):
     utils.printLine("Simulation")
+    print('Starting Principal :: ', principal)
+    print('Prediction Period (days) :: ', prediction_period)
+    print('Lookback Period (days) :: ', lookback_period)
     tickerList = Database().getTickerTablesList()
     currentDay = start_date
 
     # TODO Add ticker list the model was trained on to model specs and just remove those tickers from simluations instead of doing odds and evens
-    # 
-    dataframe = Database().getTickerDataToDate('aame', start_date, lookback_period)
-    dataframe = dataframe.iloc[::-1]
-    print(dataframe)
-
-    ## -------- Main Simulation Loop --------
-    # while currentDay <= end_date:
-    #     currentDay = currentDay + timedelta(days=1)
-    #     for ticker in tickerList:
-    #         dataframe.iloc[]
-    #         print(dataframe)
-        
-
-    print(start_date, "===>", end_date)
-    print('diversification', diversification)
-    print('principal', principal)
-    print('prediction_period', prediction_period)
-    print('lookback_period', lookback_period)
-    # print('lookback_period', currentDay)
-    # print('lookback_period', end_date)
     model_path = os.path.join(app.config['MODELS_DR'], model)
     loaded_model = pickle.load(open(model_path, 'rb'))
     possible_outcomes = getPossibleOutcomes()
-    # table="aame"
-    # dataframe = Database().getTickerData(table)
-    p_df = getPredictions(model=loaded_model, dataframe=dataframe, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
-    print('data', dataframe.tail(prediction_period))
-    print('predicitons', p_df.tail(prediction_period * 2))
-    getMaxDiffInPrediction(p_df, prediction_period=prediction_period)
+
+    # -------- Main Simulation Loop --------
+    while currentDay <= end_date:
+        currentDay = currentDay + timedelta(days=1)
+        utils.printLine(f"Day - {currentDay}")
+        for ticker in tickerList:
+            # Get lookback data for Current Ticker for Current Day, reverse results with iloc to maintain correct order of dates
+            lookbackDF = Database().getTickerDataToDate(ticker, currentDay, lookback_period).iloc[::-1]
+            if lookbackDF.shape[0] < lookback_period:
+                print('Not enough rows for T.A., skipping')
+                continue
+
+            predictionDF = getPredictions(model=loaded_model, dataframe=lookbackDF, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
+            maxDiff = getMaxDiffInPrediction(predictionDF, prediction_period=prediction_period)
+            print(lookbackDF.tail(3))
+            print(predictionDF.tail(3))
+            print('Max Price Delta :: ', maxDiff)
+
     return
 
 # TODO update to find MAX diff, not diff between start and end
