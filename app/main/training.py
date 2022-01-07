@@ -54,15 +54,16 @@ def simulate(
 
     # TODO Add ticker list the model was trained on to model specs and just remove those tickers from simluations instead of doing odds and evens
     # 
-    dataframe = Database().getTickerDataByDates('aame', start_date, end_date)
+    dataframe = Database().getTickerDataToDate('aame', start_date, lookback_period)
+    dataframe = dataframe.iloc[::-1]
     print(dataframe)
-    
-    while currentDay <= end_date:
-        print(currentDay)
-        currentDay = currentDay + timedelta(days=1)
-        # for ticker in tickerList:
-        # dataframe.iloc[]
-        # print(dataframe)
+
+    ## -------- Main Simulation Loop --------
+    # while currentDay <= end_date:
+    #     currentDay = currentDay + timedelta(days=1)
+    #     for ticker in tickerList:
+    #         dataframe.iloc[]
+    #         print(dataframe)
         
 
     print(start_date, "===>", end_date)
@@ -72,15 +73,15 @@ def simulate(
     print('lookback_period', lookback_period)
     # print('lookback_period', currentDay)
     # print('lookback_period', end_date)
-    # model_path = os.path.join(app.config['MODELS_DR'], model)
-    # loaded_model = pickle.load(open(model_path, 'rb'))
-    # possible_outcomes = getPossibleOutcomes()
+    model_path = os.path.join(app.config['MODELS_DR'], model)
+    loaded_model = pickle.load(open(model_path, 'rb'))
+    possible_outcomes = getPossibleOutcomes()
     # table="aame"
     # dataframe = Database().getTickerData(table)
-    # p_df = getPredictions(model=loaded_model, dataframe=dataframe, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
-    # print('data', dataframe.tail(prediction_period))
-    # print('predicitons', p_df.tail(prediction_period * 2))
-    # getMaxDiffInPrediction(p_df, prediction_period=prediction_period)
+    p_df = getPredictions(model=loaded_model, dataframe=dataframe, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
+    print('data', dataframe.tail(prediction_period))
+    print('predicitons', p_df.tail(prediction_period * 2))
+    getMaxDiffInPrediction(p_df, prediction_period=prediction_period)
     return
 
 # TODO update to find MAX diff, not diff between start and end
@@ -180,11 +181,12 @@ def getPredictions(model, dataframe, possible_outcomes, prediction_period=10):
         predicted_close = predicted_open * (1 + (delta_close * mutiplier))
 
         p_dataframe = pd.concat([p_dataframe, pd.DataFrame({
+            'date': ['date'],
             'open': [predicted_open],
             'high': [0],
             'low': [0],
             'close': [predicted_close],
-            'adj _close': [0],
+            'adj_close': [0],
             'volume': [0],
         })])
 
