@@ -51,7 +51,7 @@ def simulate(
         utils.printLine(f"Day - {currentDay}")
         for ticker in tickerList:
             # Get lookback data for Current Ticker for Current Day, reverse results with iloc to maintain correct order of dates
-            lookbackDF = Database().getTickerDataToDate(ticker, currentDay, lookback_period).iloc[::-1]
+            lookbackDF = Database().getTickerDataToDate(ticker, currentDay, lookback_period)
             if lookbackDF.shape[0] < lookback_period:
                 print('Not enough rows for T.A., skipping')
                 continue
