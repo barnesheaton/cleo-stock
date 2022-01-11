@@ -70,6 +70,7 @@ def getMaxDiffInPrediction(dataframe, prediction_period=14):
     end = dataframe.iloc[-1]['close']
     return end - start
 
+# TODO may have to be based on user input eventually when model features can be chosen
 def getPossibleOutcomes(n_steps_delta_open=20, n_steps_delta_close=20, n_steps_rsis=80):
     delta_open_range = np.linspace(-0.2, 0.2, n_steps_delta_open)
     delta_close_range = np.linspace(-0.2, 0.2, n_steps_delta_close)
@@ -187,7 +188,8 @@ def getPredictions(model, dataframe, possible_outcomes, prediction_period=10):
 
 def getPredictedFeatures(model, data, possible_outcomes):
     outcome_score = []
-    for possible_outcome in tqdm(possible_outcomes):
+    isProduction = app.config['FLASK_ENV'] == 'production'
+    for possible_outcome in tqdm(possible_outcomes, disable=isProduction):
         total_data = np.row_stack((data, possible_outcome))
         outcome_score.append(model.score(total_data))
 

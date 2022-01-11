@@ -23,6 +23,12 @@ class Task(db.Model):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
 
+class StockModel(db.Model):
+    id = db.Column('id', db.Integer(), primary_key=True, autoincrement=True)
+    tickers = db.Column(db.String())
+    features = db.Column(db.Integer())
+    pickle = db.Column(db.PickleType())
+
 # class Simulation(db.Model):
 #     id = db.Column(db.String(36), primary_key=True)
 #     starting_capital = db.Column(db.Float())
@@ -31,8 +37,6 @@ class Task(db.Model):
 #     # settings = db.Column(db.Json())
 
 class Bar(db.Model):
-    # id = db.Column(db.Integer(), primary_key=True)
-    # ticker = db.Column(db.String(128))
     date = db.Column(db.String(128), primary_key=True)
     open = db.Column(db.Float())
     high = db.Column(db.Float())

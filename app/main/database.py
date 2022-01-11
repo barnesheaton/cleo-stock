@@ -49,11 +49,10 @@ class Database():
         dataframe.to_sql(table, con=self.connection, if_exists='append', index=False)
 
     def createTickerTable(self, table):
-        print("createTickerTable")
         if not self.connection.dialect.has_table(self.connection, table):
             metadata = MetaData(self.connection)
             Table(table, metadata,
-                db.Column('date', db.Date(), primary_key=True, index=True),
+                db.Column('date', db.Date(), primary_key=True, index=True, unique=True),
                 db.Column('open', db.Float()),
                 db.Column('high', db.Float()),
                 db.Column('low', db.Float()),
@@ -72,11 +71,11 @@ class Database():
         return pd.read_sql_table(table, self.connection)
 
     def getTickerDataToDate(self, table, date, days):
-        if (days == 0):
+        if (days == 0 | days == 'max'):
             sql = f"""SELECT
                         *
                     FROM
-                        aame
+                        {table}
                     WHERE
                         {table}.date <= '{date.strftime('%Y-%m-%d %H:%M:%S.%f')}'
                     ORDER BY

@@ -18,7 +18,7 @@ def index():
     if updateForm.is_submitted():
         session.launch_task('updateTickerTablesTask', period=updateForm.period.data, start=int(updateForm.start.data), end=int(updateForm.end.data))
 
-    return render_template('index.html', title='Home', updateForm=updateForm, session=session)
+    return render_template('index.html', title='Home', updateForm=updateForm, session=session, env=app.config['FLASK_ENV'])
 
 
 @app.route('/models', methods=['GET', 'POST'])
