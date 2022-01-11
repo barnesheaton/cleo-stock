@@ -99,12 +99,11 @@ def runVerfication(
     prediction_period=4,
     start=3,
     end=7,
-    tickers=False,
     startDate="2019-01-01",
     endDate="2021-01-01"
 ):
-    ticker_list, ticker_string = utils.getTickerList(
-        start=start, end=end, tickers=tickers)
+    ticker_list = utils.getTickerList(start=start, end=end)
+    ticker_string = utils.getTickerString(start=start, end=end)
     yf_dataframe = yf.download(
         tickers=ticker_string, start=startDate, end=endDate, group_by="ticker")
 

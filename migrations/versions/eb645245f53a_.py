@@ -37,7 +37,7 @@ def upgrade():
     op.create_index(op.f('ix_task_name'), 'task', ['name'], unique=False)
     # ### end Alembic commands ###
 
-    (ticker_list, _) = utils.getTickerList(start=30, end=40)
+    ticker_list = utils.getTickerList(start=30, end=40)
     for ticker in ticker_list:
         table_name = ticker.lower()
         op.create_table(table_name,
@@ -58,7 +58,7 @@ def downgrade():
     op.drop_table('task')
     # ### end Alembic commands ###
 
-    (ticker_list, _) = utils.getTickerList(start=30, end=40)
+    ticker_list = utils.getTickerList(start=30, end=40)
     for ticker in ticker_list:
         table_name = ticker.lower()
         if hasTable(table_name):
