@@ -7,7 +7,7 @@ class Task(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     name = db.Column(db.String(128), index=True)
     description = db.Column(db.String(128))
-    complete = db.Column(db.Boolean, default=False)
+    complete = db.Column(db.Boolean, default=False, nullable=False)
 
     def __repr__(self):
         return f"Task - ${self.name} Complete => [${self.complete}]"
@@ -25,9 +25,10 @@ class Task(db.Model):
 
 class StockModel(db.Model):
     id = db.Column('id', db.Integer(), primary_key=True, autoincrement=True)
-    tickers = db.Column(db.String())
+    tickers = db.Column(db.ARRAY(db.Integer()))
     features = db.Column(db.Integer())
     pickle = db.Column(db.PickleType())
+    possible_outcomes = db.Column(db.JSON())
 
 # class Simulation(db.Model):
 #     id = db.Column(db.String(36), primary_key=True)
