@@ -25,7 +25,7 @@ def trainModel(dataframe):
 
 # Saving a Model should be bound with predicted features
 def simulate(
-    modelId=1,
+    modelId=3,
     lookback_period=0,
     prediction_period=14,
     start_date="2019-01-01",
@@ -33,32 +33,32 @@ def simulate(
     principal=10000,
     diversification=5
 ):
+    currentDay = start_date
+
+    # TODO Add ticker list the model was trained on to model specs and just remove those tickers from simluations instead of doing odds and evens
+    possible_outcomes = getPossibleOutcomes()
+    stockModel = StockModel.query.get(modelId)
+    loadedModel = pickle.loads(stockModel.pickle)
+
+    databaseTickers = Database().getTickerTablesList()
+    modelTickers = stockModel.tickers
+    simulationTickers = utils.xor(databaseTickers, modelTickers)
+
+    # -------- Main Simulation Loop --------
     utils.printLine("Simulation")
     print('Starting Principal :: ', principal)
     print('Prediction Period (days) :: ', prediction_period)
     print('Lookback Period (days) :: ', lookback_period)
-    tickerList = Database().getTickerTablesList()
-    currentDay = start_date
-
-    # TODO Add ticker list the model was trained on to model specs and just remove those tickers from simluations instead of doing odds and evens
-    model_path = os.path.join(app.config['MODELS_DR'], 'model_1.pkl')
-    loaded_model = pickle.load(open(model_path, 'rb'))
-    possible_outcomes = getPossibleOutcomes()
-
-    stockModel = StockModel.query.get(modelId)
-    print(stockModel)
-
-    # -------- Main Simulation Loop --------
+    print('Simulations Tickers', simulationTickers)
     while currentDay <= end_date:
         utils.printLine(f"Day - {currentDay}")
-        for ticker in tickerList:
-            # Get lookback data for Current Ticker for Current Day, reverse results with iloc to maintain correct order of dates
+        for ticker in simulationTickers:
             lookbackDF = Database().getTickerDataToDate(ticker, currentDay, lookback_period)
             if lookbackDF.shape[0] < lookback_period:
                 print('Not enough rows for T.A., skipping')
                 continue
 
-            predictionDF = getPredictions(model=loaded_model, dataframe=lookbackDF, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
+            predictionDF = getPredictions(model=loadedModel, dataframe=lookbackDF, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
             maxDiff = getMaxDiffInPrediction(predictionDF, prediction_period=prediction_period)
             print(lookbackDF.tail(5))
             print(predictionDF.tail(5))
