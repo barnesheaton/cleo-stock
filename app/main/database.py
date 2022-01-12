@@ -1,8 +1,10 @@
 import pandas as pd
 import yfinance as yf
 from app import db
+import random
 import sys
 import app.main.utils as utils
+from app.models import StockModel
 from sqlalchemy import Table, MetaData
 
 
@@ -11,14 +13,12 @@ class Database():
 
     def __init__(self):
         self.connection = db.engine
-
-    def getTrainingData(self):
-        ticker_list = utils.getTickerList()
+        
+    def getTrainingData(self, tickerList):
         dataframe = pd.DataFrame()
-        for index, ticker in enumerate(ticker_list):
+        for ticker in tickerList:
             db_has_table = self.connection.dialect.has_table(self.connection, ticker.lower())
-            # Take every other ticker table to seperate training data from test data
-            if (index % 2 == 0) & db_has_table:
+            if db_has_table:
                 dataframe = pd.concat([dataframe, self.getTickerData(ticker.lower())])
 
         return dataframe
@@ -63,10 +63,18 @@ class Database():
             )
             metadata.create_all()
 
-    def getTickerTablesList(self):
+    def getTickerTablesList(self, samplePercent=None):
         tickers = utils.getTickerList()
         tables = self.connection.table_names()
-        return utils.intersection(tickers, tables)
+        tickerTables = utils.intersection(tickers, tables)
+
+        if samplePercent:
+            k = len(tickerTables) * float(samplePercent) // 100
+            indicies = random.sample(range(len(tickerTables)), int(k))
+            sampledTickerTables = [tickerTables[i] for i in indicies]
+            return sampledTickerTables
+
+        return tickerTables
 
     def getTickerData(self, table):
         return pd.read_sql_table(table, self.connection)
