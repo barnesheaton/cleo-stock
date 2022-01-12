@@ -86,7 +86,7 @@ class Database():
                     FROM
                         {table}
                     WHERE
-                        {table}.date <= '{date.strftime('%Y-%m-%d %H:%M:%S.%f')}'
+                        {table}.date <= '{date.strftime('%Y-%m-%d')}'
                     ORDER BY
                         {table}.date DESC
             """
@@ -99,7 +99,7 @@ class Database():
                         FROM
                             {table}
                         WHERE
-                            {table}.date <= '{date.strftime('%Y-%m-%d %H:%M:%S.%f')}'
+                            {table}.date <= '{date.strftime('%Y-%m-%d')}'
                         ORDER BY
                             {table}.date DESC
                         ) AS {table}_temp

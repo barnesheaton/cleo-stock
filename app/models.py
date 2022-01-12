@@ -29,6 +29,12 @@ class StockModel(db.Model):
     features = db.Column(db.Integer())
     pickle = db.Column(db.PickleType())
     possible_outcomes = db.Column(db.JSON())
+    name = db.Column(db.String(128))
+    description = db.Column(db.String(128))
+    date = db.Column(db.DateTime())
+
+    def __repr__(self):
+        return f"Model: [{self.name}] || Date: [{self.date}]"
 
 # class Simulation(db.Model):
 #     id = db.Column(db.String(36), primary_key=True)

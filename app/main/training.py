@@ -1,6 +1,5 @@
 from tqdm import tqdm
 import yfinance as yf
-# import tensorflow as tf
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,6 +13,7 @@ from app import app
 import app.main.utils as utils
 import app.main.analysis as analysis
 from app.main.database import Database
+from app.models import StockModel
 
 from hmmlearn.hmm import GaussianHMM
 
@@ -25,7 +25,7 @@ def trainModel(dataframe):
 
 # Saving a Model should be bound with predicted features
 def simulate(
-    model="model_1.pkl",
+    modelId=1,
     lookback_period=0,
     prediction_period=14,
     start_date="2019-01-01",
@@ -41,13 +41,15 @@ def simulate(
     currentDay = start_date
 
     # TODO Add ticker list the model was trained on to model specs and just remove those tickers from simluations instead of doing odds and evens
-    model_path = os.path.join(app.config['MODELS_DR'], model)
+    model_path = os.path.join(app.config['MODELS_DR'], 'model_1.pkl')
     loaded_model = pickle.load(open(model_path, 'rb'))
     possible_outcomes = getPossibleOutcomes()
 
+    stockModel = StockModel.query.get(modelId)
+    print(stockModel)
+
     # -------- Main Simulation Loop --------
     while currentDay <= end_date:
-        currentDay = currentDay + timedelta(days=1)
         utils.printLine(f"Day - {currentDay}")
         for ticker in tickerList:
             # Get lookback data for Current Ticker for Current Day, reverse results with iloc to maintain correct order of dates
@@ -58,10 +60,11 @@ def simulate(
 
             predictionDF = getPredictions(model=loaded_model, dataframe=lookbackDF, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
             maxDiff = getMaxDiffInPrediction(predictionDF, prediction_period=prediction_period)
-            print(lookbackDF.tail(3))
-            print(predictionDF.tail(3))
+            print(lookbackDF.tail(5))
+            print(predictionDF.tail(5))
             print('Max Price Delta :: ', maxDiff)
 
+        currentDay = currentDay + timedelta(days=1)
     return
 
 # TODO update to find MAX diff, not diff between start and end
