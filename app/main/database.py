@@ -102,7 +102,8 @@ class Database():
                             {table}.date <= '{date.strftime('%Y-%m-%d %H:%M:%S.%f')}'
                         ORDER BY
                             {table}.date DESC
-                        )
+                        ) AS {table}_temp
                     LIMIT {days}
             """
-        return pd.read_sql(sql=sql, con=self.connection)
+        dataframe = pd.read_sql(sql=sql, con=self.connection)
+        return dataframe.iloc[::-1]

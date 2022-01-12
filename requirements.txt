@@ -1,4 +1,5 @@
 alembic==1.5.4
+boto3==1.19.2
 click==7.1.2
 Flask_Bootstrap==3.3.7.1
 Flask_Migrate==2.6.0
