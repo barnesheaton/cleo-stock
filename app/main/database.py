@@ -107,3 +107,28 @@ class Database():
             """
         dataframe = pd.read_sql(sql=sql, con=self.connection)
         return dataframe.iloc[::-1]
+
+    def getTickerDataAfterDate(self, table, date, days):
+        if (days == 0 | days == 'max'):
+            sql = f"""SELECT
+                        *
+                    FROM
+                        {table}
+                    WHERE
+                        {table}.date >= '{date.strftime('%Y-%m-%d')}'
+                    ORDER BY
+                        {table}.date ASC
+            """
+        else:
+            sql = f"""SELECT
+                        *
+                    FROM
+                        {table}
+                    WHERE
+                        {table}.date >= '{date.strftime('%Y-%m-%d')}'
+                    ORDER BY
+                        {table}.date ASC
+                    LIMIT {days}
+            """
+        dataframe = pd.read_sql(sql=sql, con=self.connection)
+        return dataframe

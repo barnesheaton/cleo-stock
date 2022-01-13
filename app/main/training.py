@@ -35,7 +35,6 @@ def simulate(
 ):
     currentDay = start_date
 
-    # TODO Add ticker list the model was trained on to model specs and just remove those tickers from simluations instead of doing odds and evens
     possible_outcomes = getPossibleOutcomes()
     stockModel = StockModel.query.get(modelId)
     loadedModel = pickle.loads(stockModel.pickle)
@@ -45,33 +44,61 @@ def simulate(
     simulationTickers = utils.xor(databaseTickers, modelTickers)
 
     # -------- Main Simulation Loop --------
-    utils.printLine("Simulation")
+    utils.printLine("Accuracy Verification")
     print('Starting Principal :: ', principal)
     print('Prediction Period (days) :: ', prediction_period)
     print('Lookback Period (days) :: ', lookback_period)
     print('Simulations Tickers', simulationTickers)
+
+    openAccuracy = np.array([])
+    closeAccuracy = np.array([])
+
     while currentDay <= end_date:
-        utils.printLine(f"Day - {currentDay}")
+        utils.printLine(f"Day ({currentDay})")
+        nextDay = currentDay + timedelta(days=1)
         for ticker in simulationTickers:
+            print(f"[=== Ticker {ticker} ===]")
             lookbackDF = Database().getTickerDataToDate(ticker, currentDay, lookback_period)
+            verificationDF = Database().getTickerDataAfterDate(ticker, nextDay, prediction_period)
+            print('lookback Dataframe\n', lookbackDF.tail(3))
+            print('verification Dataframe\n', verificationDF.head(3))
             if lookbackDF.shape[0] < lookback_period:
                 print('Not enough rows for T.A., skipping')
                 continue
 
             predictionDF = getPredictions(model=loadedModel, dataframe=lookbackDF, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
-            maxDiff = getMaxDiffInPrediction(predictionDF, prediction_period=prediction_period)
-            print(lookbackDF.tail(5))
-            print(predictionDF.tail(5))
+            maxDiff = getMaxDiffInPrediction(lookbackDF.iloc[-1]['close'], predictionDF, predictionPeriod=prediction_period)
+            print('prediction Dataframe\n', predictionDF.tail(3))
             print('Max Price Delta :: ', maxDiff)
 
-        currentDay = currentDay + timedelta(days=1)
+            predictedOpens = np.array(predictionDF.iloc[-prediction_period:]['open'])
+            verfiedOpens = verificationDF['open'].to_numpy()
+            openPercentages = np.abs((predictedOpens - verfiedOpens) / verfiedOpens)
+            openAccuracy = np.concatenate([openAccuracy, openPercentages], axis=None)
+
+            predictedCloses = np.array(predictionDF.iloc[-prediction_period:]['close'])
+            verfiedCloses = verificationDF['close'].to_numpy()
+            closePercentages = np.abs((predictedCloses - verfiedCloses) / verfiedCloses)
+            closeAccuracy = np.concatenate([closeAccuracy, closePercentages], axis=None)
+
+        currentDay = nextDay
+
+    closeAccuracy = np.mean(closeAccuracy)
+    openAccuracy = np.mean(openAccuracy)
+    totalAccuracy = np.mean([closeAccuracy, openAccuracy])
+
+    utils.printLine("Results")
+    print('Close Accuracy :: ', closeAccuracy)
+    print('Open Accuracy :: ', openAccuracy)
+    print('Total Accuracy :: ', totalAccuracy)
+
     return
 
-# TODO update to find MAX diff, not diff between start and end
-def getMaxDiffInPrediction(dataframe, prediction_period=14):
-    start = dataframe.iloc[((-prediction_period) - 1)]['open']
-    end = dataframe.iloc[-1]['close']
-    return end - start
+# TODO add absulte value to deltas to account for dips as well
+def getMaxDiffInPrediction(price, dataframe, predictionPeriod=14):
+    closeDeltas = (np.array(dataframe.iloc[-predictionPeriod:]['close']) - price) / price
+    openDeltas = (np.array(dataframe.iloc[-predictionPeriod:]['open']) - price) / price
+    return np.nanmax(np.concatenate([closeDeltas, openDeltas]))
 
 # TODO may have to be based on user input eventually when model features can be chosen
 def getPossibleOutcomes(n_steps_delta_open=20, n_steps_delta_close=20, n_steps_rsis=80):
