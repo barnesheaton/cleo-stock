@@ -27,7 +27,7 @@ def models():
     trainModelForm = TrainModelForm()
 
     if trainModelForm.is_submitted():
-        session.launch_task('trainModelTask')
+        session.launch_task('trainModelTask', name=trainModelForm.name, description=(trainModelForm.description | None))
 
     return render_template('models.html', title='Models', trainModelForm=trainModelForm, session=session)
 
@@ -35,6 +35,10 @@ def models():
 def simulations():
     session = Session()
     simulateForm = SimulateForm()
+    print(simulateForm)
+    for field in simulateForm:
+        print(field)
+        print(field.name, field.id)
 
     if request.method == 'POST' and simulateForm.validate():
         session.launch_task(

@@ -1,9 +1,11 @@
 {% macro render_field(field) %}
-  <dt>{{ field.label }}
-    <dd>{{ field(**kwargs)|safe }}</dd>
-    {% if field.errors %}
-      <small class="form-text text-muted text-danger">
-        {{ ', '.join(field.errors) }}
-      </small>
+  {% if field.id != 'submit' and field.id != 'csrf_token' %}
+    <dt>{{ field.label }}
+      <dd>{{ field(**kwargs)|safe }}</dd>
+      {% if field.errors %}
+        <small class="form-text text-muted text-danger">
+          {{ ', '.join(field.errors) }}
+        </small>
+      {% endif %}
     {% endif %}
   {% endmacro %}

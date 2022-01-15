@@ -14,6 +14,8 @@ class UpdateStockDataForm(FlaskForm):
 
 class TrainModelForm(FlaskForm):
     submit = SubmitField('Train Model')
+    name = StringField('Name')
+    description = StringField('Description')
 
 class SimulateForm(FlaskForm):
     start_date = DateField(validators=[DataRequired()])
