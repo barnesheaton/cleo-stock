@@ -17,9 +17,12 @@ class Database():
     def getTrainingData(self, tickerList):
         dataframe = pd.DataFrame()
         for ticker in tickerList:
-            db_has_table = self.connection.dialect.has_table(self.connection, ticker.lower())
-            if db_has_table:
-                dataframe = pd.concat([dataframe, self.getTickerData(ticker.lower())])
+            databaseHasTable = self.connection.dialect.has_table(self.connection, ticker.lower())
+            if databaseHasTable:
+                df = self.getTickerData(ticker.lower()).dropna()
+                # TODO this check should eventually be based on the minimum rows needed to build a feature w/ a fallback
+                if df.shape[0] >= 21:
+                    dataframe = pd.concat([dataframe, self.getTickerData(ticker.lower())])
 
         return dataframe
 

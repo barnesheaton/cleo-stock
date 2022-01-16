@@ -1,9 +1,21 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-
-<form action="" method="post" novalidate>
-    <p>{{ trainModelForm.submit() }}</p>
-</form>
-
+  <div class="container" id="simulation">
+    {% from "_formhelpers.html" import render_field %}
+    <form method="post" novalidate="novalidate" class="form">
+      {{ trainModelForm.csrf_token }}
+      {{ trainModelForm.hidden_tag() }}
+      <div class="row">
+        {% for field in trainModelForm %}
+          <div class="form-group">
+            {{ render_field(field) }}
+          </div>
+        {% endfor %}
+      </div>
+      <div class="form-group">
+        {{ trainModelForm.submit(class="btn btn-primary")}}
+      </div>
+    </form>
+  </div>
 {% endblock %}

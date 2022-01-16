@@ -14,6 +14,7 @@ import app.main.utils as utils
 import app.main.analysis as analysis
 from app.main.database import Database
 from app.models import StockModel
+from numpy import vectorize
 
 from hmmlearn.hmm import GaussianHMM
 
@@ -229,8 +230,12 @@ def getFeatures(dataframe):
     open_price = np.array(dataframe['open'])
     close_price = np.array(dataframe['close'])
 
+    def fc(c, o): return 100 if o == 0 else (c - o) / o
+
+    vfunc = vectorize(fc)
+
     delta_open = (open_price[1:] - close_price[0:-1]) / close_price[0:-1]
-    frac_change = (close_price - open_price) / open_price
+    frac_change = vfunc(close_price, open_price)
     rsis = analysis.getReltiveStrengthIndexes(close_price)
     rsis_length = len(rsis)
 

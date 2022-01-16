@@ -32,16 +32,24 @@ class StockModel(db.Model):
     name = db.Column(db.String(128))
     description = db.Column(db.String(128))
     date = db.Column(db.DateTime())
+    models = db.relationship("Simulation")
 
     def __repr__(self):
         return f"Model: [{self.name}] || Date: [{self.date}]"
 
-# class Simulation(db.Model):
-#     id = db.Column(db.String(36), primary_key=True)
-#     starting_capital = db.Column(db.Float())
-#     ending_capital = db.Column(db.Float())
-#     simulation_period = db.Column(db.Integer())
-#     # settings = db.Column(db.Json())
+class Simulation(db.Model):
+    id = db.Column('id', db.Integer(), primary_key=True, autoincrement=True)
+    model_id = db.Column(db.Integer(), db.ForeignKey('stock_model.id'))
+    date = db.Column(db.DateTime())
+    start_date = db.Column(db.Date())
+    end_date = db.Column(db.Date())
+    simulation_period = db.Column(db.Integer())
+    close_accuracy = db.Column(db.Float())
+    open_accuracy = db.Column(db.Float())
+    total_accuracy = db.Column(db.Float())
+    starting_capital = db.Column(db.Float())
+    ending_capital = db.Column(db.Float())
+    complete = db.Column(db.Boolean, default=False, nullable=False)
 
 class Bar(db.Model):
     date = db.Column(db.String(128), primary_key=True)

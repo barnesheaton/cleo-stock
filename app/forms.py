@@ -8,14 +8,16 @@ class QueueForm(FlaskForm):
 
 class UpdateStockDataForm(FlaskForm):
     start = DecimalField('Start Index', places=0)
-    end = DecimalField('End Index')
+    end = DecimalField('End Index', places=0)
     period = StringField('Period')
     submit = SubmitField('Update')
 
 class TrainModelForm(FlaskForm):
-    submit = SubmitField('Train Model')
-    name = StringField('Name')
-    description = StringField('Description')
+    name = StringField(label='Name', validators=[DataRequired()])
+    description = StringField(label='Description')
+    tickers = StringField(label="Tickers")
+    samplePercent = DecimalField(label='Sample Percent', places=0)
+    submit = SubmitField()
 
 class SimulateForm(FlaskForm):
     start_date = DateField(validators=[DataRequired()])
