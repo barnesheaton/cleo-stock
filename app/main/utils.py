@@ -20,7 +20,6 @@ def xor(lst1, lst2):
 def printLine(title=''):
     print(f"\n--------------------- {title} -----------------------\n")
 
-
 def getTickerList(file="tickers.csv", start=0, end=-1):
     df = pd.read_csv(file, names=["Symbol", "Description"])
     ticker_list = df["Symbol"].to_numpy()

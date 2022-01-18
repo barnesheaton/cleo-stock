@@ -27,21 +27,21 @@ def trainModel(dataframe):
 
 # Saving a Model should be bound with predicted features
 def simulate(
-    modelId=3,
+    model_id=3,
     lookback_period=0,
     prediction_period=14,
     start_date="2019-01-01",
-    end_date="2021-01-01",
+    end_date="2019-12-31",
     principal=10000,
     diversification=5
 ):
-    simulation = Simulation(model_id=modelId, date=datetime.date.today(), start_date=start_date, end_date=end_date, starting_capital=principal, complete=False)
+    simulation = Simulation(model_id=model_id, date=datetime.date.today(), start_date=start_date, end_date=end_date, starting_capital=principal, complete=False)
     db.session.add(simulation)   
     db.session.commit()
     currentDay = start_date
 
     possible_outcomes = getPossibleOutcomes()
-    stockModel = StockModel.query.get(modelId)
+    stockModel = StockModel.query.get(model_id)
     loadedModel = pickle.loads(stockModel.pickle)
 
     databaseTickers = Database().getTickerTablesList()
@@ -120,9 +120,9 @@ def getPossibleOutcomes(n_steps_delta_open=20, n_steps_delta_close=20, n_steps_r
 
     return np.array(list(itertools.product(delta_open_range, delta_close_range, rsis_range)))
     
-def getTickerOutlook(possible_outcomes, modelId=3, ticker="aapl", prediction_period=14):
+def getTickerOutlook(possible_outcomes, model_id=3, ticker="aapl", prediction_period=14):
     dataframe = Database().getTickerData(ticker)
-    stockModel = StockModel.query.get(modelId)
+    stockModel = StockModel.query.get(model_id)
     loadedModel = pickle.loads(stockModel.pickle)
 
     predicitons = getPredictions(

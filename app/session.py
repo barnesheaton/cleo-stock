@@ -1,6 +1,6 @@
 from flask import current_app
 from app import db
-from app.models import Task
+from app.models import Task, StockModel
 
 class Session():
     def launch_task(self, name, *args, **kwargs):
@@ -21,3 +21,6 @@ class Session():
 
     def get_task(self, name):
         return Task.query.filter_by(name=name).first()
+
+    def getAllModels(self):
+        return StockModel.query.all()

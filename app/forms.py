@@ -1,7 +1,8 @@
+from wsgiref.validate import validator
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, DecimalField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, DecimalField, SelectField
 from wtforms.fields.html5 import DateField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, ValidationError, Optional
 
 class QueueForm(FlaskForm):
     submit = SubmitField('Queue Task')
@@ -14,12 +15,22 @@ class UpdateStockDataForm(FlaskForm):
 
 class TrainModelForm(FlaskForm):
     name = StringField(label='Name', validators=[DataRequired()])
-    description = StringField(label='Description')
-    tickers = StringField(label="Tickers")
-    samplePercent = DecimalField(label='Sample Percent', places=0)
+    description = StringField(label='Description', render_kw={"placeholder": "A description of the model"})
+    tickers = StringField(label="Tickers", render_kw={"placeholder": "A string of tickers"})
+    samplePercent = DecimalField(label='Sample Percent', validators=[Optional()], places=0, render_kw={"placeholder": "Percent of DB tickers to sample"})
     submit = SubmitField()
 
+    def validate_tickers(form, field):
+        print('validating')
+        if field.data and form.samplePercent.data: 
+            raise ValidationError("Only one method of sampling tickers is allowed.")
+
+    def validate_samplePercent(form, field):
+        if field.data and form.tickers.data: 
+            raise ValidationError("Only one method of sampling tickers is allowed.")
+
 class SimulateForm(FlaskForm):
+    model = SelectField(label='model', choices=[])
     start_date = DateField(validators=[DataRequired()])
     end_date = DateField(validators=[DataRequired()])
     principal = DecimalField(label='Starting Principal', places=0, render_kw={"placeholder": "Starting Principal"})

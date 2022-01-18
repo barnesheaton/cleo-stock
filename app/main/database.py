@@ -66,7 +66,7 @@ class Database():
             )
             metadata.create_all()
 
-    def getTickerTablesList(self, samplePercent=None):
+    def getTickerTablesList(self, samplePercent=None, tickerString=None):
         tickers = utils.getTickerList()
         tables = self.connection.table_names()
         tickerTables = utils.intersection(tickers, tables)
@@ -76,6 +76,9 @@ class Database():
             indicies = random.sample(range(len(tickerTables)), int(k))
             sampledTickerTables = [tickerTables[i] for i in indicies]
             return sampledTickerTables
+
+        elif tickerString:
+            return utils.intersection(tickers, tickerString.replace(" ", "").strip(",").split(","))
 
         return tickerTables
 
