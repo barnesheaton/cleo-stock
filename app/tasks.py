@@ -10,7 +10,6 @@ from app.main.training import trainModel
 
 from app.models import StockModel
 
-
 from app import db
 
 def updateTickerTablesTask(*args, **kwargs):

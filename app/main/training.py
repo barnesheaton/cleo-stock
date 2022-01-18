@@ -3,17 +3,18 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from datetime import datetime, timedelta
+from datetime import timedelta
+import datetime
 import os
 import pickle
 import itertools
 
-from app import app
+from app import app, db
 
 import app.main.utils as utils
 import app.main.analysis as analysis
 from app.main.database import Database
-from app.models import StockModel
+from app.models import StockModel, Simulation
 from numpy import vectorize
 
 from hmmlearn.hmm import GaussianHMM
@@ -34,6 +35,9 @@ def simulate(
     principal=10000,
     diversification=5
 ):
+    simulation = Simulation(model_id=modelId, date=datetime.date.today(), start_date=start_date, end_date=end_date, starting_capital=principal, complete=False)
+    db.session.add(simulation)   
+    db.session.commit()
     currentDay = start_date
 
     possible_outcomes = getPossibleOutcomes()
@@ -88,6 +92,13 @@ def simulate(
     openAccuracy = np.mean(openAccuracy)
     totalAccuracy = np.mean([closeAccuracy, openAccuracy])
 
+    simulation.complete = True
+    simulation.close_accuracy = closeAccuracy
+    simulation.open_accuracy = openAccuracy
+    simulation.total_accuracy = totalAccuracy
+
+    db.session.commit()
+
     utils.printLine("Results")
     print('Close Accuracy :: ', closeAccuracy)
     print('Open Accuracy :: ', openAccuracy)
@@ -109,62 +120,17 @@ def getPossibleOutcomes(n_steps_delta_open=20, n_steps_delta_close=20, n_steps_r
 
     return np.array(list(itertools.product(delta_open_range, delta_close_range, rsis_range)))
     
-# def getTickerOutlook(model, possible_outcomes, ticker="AAPL"):
-#     # update to read form our DB
-#     dataframe = Database().getTickerData(ticker)
-#     dataframe = yf.download(tickers=ticker, period="max", group_by="ticker")
+def getTickerOutlook(possible_outcomes, modelId=3, ticker="aapl", prediction_period=14):
+    dataframe = Database().getTickerData(ticker)
+    stockModel = StockModel.query.get(modelId)
+    loadedModel = pickle.loads(stockModel.pickle)
 
-#     getPredictions(
-#         model,
-#         dataframe,
-#         possible_outcomes=possible_outcomes,
-#         prediction_period=prediction_period
-#     )
-
-# def orderPredictions():
-
-def runVerfication(
-    model,
-    possible_outcomes,
-    lookback_period=40,
-    prediction_period=4,
-    start=3,
-    end=7,
-    startDate="2019-01-01",
-    endDate="2021-01-01"
-):
-    ticker_list = utils.getTickerList(start=start, end=end)
-    ticker_string = utils.getTickerString(start=start, end=end)
-    yf_dataframe = yf.download(
-        tickers=ticker_string, start=startDate, end=endDate, group_by="ticker")
-
-    for ticker in ticker_list:
-        # update to read form our DB
-        dataframe = yf_dataframe.dropna() if (
-            len(ticker_list) == 1) else yf_dataframe[ticker].dropna()
-
-        if dataframe.shape[0] <= (lookback_period + prediction_period):
-            continue
-
-        utils.printLine(f"{ticker}")
-        length = dataframe.shape[0]
-        start_index = 0 if lookback_period == 0 else length - \
-            (lookback_period + prediction_period)
-
-        predictions_df = getPredictions(
-            model,
-            dataframe.iloc[start_index: -prediction_period],
-            possible_outcomes=possible_outcomes,
-            prediction_period=prediction_period
-        )
-        verification_df = dataframe.iloc[start_index:]
-
-        utils.printLine("Predictions")
-        print(predictions_df.tail(prediction_period + 5))
-        print(verification_df.tail(prediction_period + 5))
-
-        plotPredictedCloses(predictions_df, verification_df, ticker)
-
+    predicitons = getPredictions(
+        loadedModel,
+        dataframe,
+        possible_outcomes=possible_outcomes,
+        prediction_period=prediction_period
+    )
 
 def getPredictions(model, dataframe, possible_outcomes, prediction_period=10):
     p_dataframe = dataframe
