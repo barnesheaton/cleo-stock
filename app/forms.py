@@ -20,14 +20,17 @@ class TrainModelForm(FlaskForm):
     samplePercent = DecimalField(label='Sample Percent', validators=[Optional()], places=0, render_kw={"placeholder": "Percent of DB tickers to sample"})
     submit = SubmitField()
 
-    def validate_tickers(form, field):
-        print('validating')
-        if field.data and form.samplePercent.data: 
+    def validate_tickers(self, field):
+        if field.data and self.samplePercent.data:
             raise ValidationError("Only one method of sampling tickers is allowed.")
+        if not self.samplePercent.data and not self.tickers.data:
+            raise ValidationError("Must choose a method of sampling tickers")
 
-    def validate_samplePercent(form, field):
-        if field.data and form.tickers.data: 
+    def validate_samplePercent(self, field):
+        if field.data and self.tickers.data:
             raise ValidationError("Only one method of sampling tickers is allowed.")
+        if not self.samplePercent.data and not self.tickers.data:
+            raise ValidationError("Must choose a method of sampling tickers")
 
 class SimulateForm(FlaskForm):
     model = SelectField(label='model', choices=[])
