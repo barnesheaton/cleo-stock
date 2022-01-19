@@ -113,10 +113,14 @@ def simulate(
             print(f"[=== Ticker {ticker} ===]")
             lookbackDF = Database().getTickerDataToDate(ticker, current_date, lookback_period)
             verificationDF = Database().getTickerDataAfterDate(ticker, nextDay, prediction_period)
+            print('lookbackDF\n', lookbackDF.tail(5))
+            print('verificationDF\n', verificationDF.head(5))
             if lookbackDF.shape[0] < 21:
+                print("Not enough data in Lookback DF, skipping")
                 continue
 
             predictionDF = getPredictions(model=loadedModel, dataframe=lookbackDF, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
+            print('predictionDF\n', predictionDF.head(5))
             maxDiff = getMaxDiffInPrediction(lookbackDF.iloc[-1]['close'], predictionDF, predictionPeriod=prediction_period)
             print('Max Price Delta :: ', maxDiff)
             
@@ -136,7 +140,7 @@ def simulate(
                 prospects_on_day.append(ticker)
 
         if (len(prospects_on_day) > max_buys_per_day):
-                prospects_on_day = np.random.choice(prospects_on_day, max_buys_per_day)
+            prospects_on_day = np.random.choice(prospects_on_day, max_buys_per_day)
 
         utils.printLine('EOD Stats')
         print("Capital", capital)
@@ -238,7 +242,7 @@ def getPredictions(model, dataframe, possible_outcomes, prediction_period=10):
 def getPredictedFeatures(model, data, possible_outcomes):
     outcome_score = []
     isProduction = app.config['FLASK_ENV'] == 'production'
-    for possible_outcome in tqdm(possible_outcomes, disable=isProduction):
+    for possible_outcome in tqdm(possible_outcomes, disable=False):
         total_data = np.row_stack((data, possible_outcome))
         outcome_score.append(model.score(total_data))
 
