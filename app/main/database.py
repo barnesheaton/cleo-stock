@@ -86,7 +86,7 @@ class Database():
         return pd.read_sql_table(table, self.connection)
 
     def getTickerDataToDate(self, table, date, days):
-        if (days == 0 | days == 'max'):
+        if (days == 0 or days == 'max'):
             sql = f"""SELECT
                         *
                     FROM
@@ -115,7 +115,7 @@ class Database():
         return dataframe.iloc[::-1]
 
     def getTickerDataAfterDate(self, table, date, days):
-        if (days == 0 | days == 'max'):
+        if (days == 0 or days == 'max'):
             sql = f"""SELECT
                         *
                     FROM

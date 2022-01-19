@@ -113,7 +113,7 @@ def simulate(
             print(f"[=== Ticker {ticker} ===]")
             lookbackDF = Database().getTickerDataToDate(ticker, current_date, lookback_period)
             verificationDF = Database().getTickerDataAfterDate(ticker, nextDay, prediction_period)
-            if lookbackDF.shape[0] < lookback_period:
+            if lookbackDF.shape[0] < 21:
                 continue
 
             predictionDF = getPredictions(model=loadedModel, dataframe=lookbackDF, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
