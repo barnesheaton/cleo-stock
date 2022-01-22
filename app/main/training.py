@@ -21,8 +21,9 @@ from numpy import vectorize
 from hmmlearn.hmm import GaussianHMM
 
 def trainModel(dataframe):
-    X = getFeatures(dataframe)
-    model = GaussianHMM(n_components=3, covariance_type="full", n_iter=20)
+    print('trainModel', dataframe.shape)
+    X = getFeaturesNew(dataframe)
+    model = GaussianHMM(n_components=4, covariance_type="diag", n_iter=10)
     model.fit(X)
     return model
 
@@ -46,13 +47,13 @@ def simulate(
     db.session.commit()
     current_day = start_date
 
-    possible_outcomes = getPossibleOutcomes()
+    possible_outcomes = getPossibleOutcomesNew()
     stockModel = StockModel.query.get(model_id)
     loadedModel = pickle.loads(stockModel.pickle)
 
     databaseTickers = Database().getTickerTablesList()
     modelTickers = stockModel.tickers
-    simulationTickers = ['aapl'] or utils.xor(databaseTickers, modelTickers)
+    simulationTickers = utils.xor(databaseTickers, modelTickers)
 
     # -------- Main Simulation Loop --------
     utils.printLine("Accuracy Verification")
@@ -60,6 +61,7 @@ def simulate(
     print('Prediction Period (days) :: ', prediction_period)
     print('Lookback Period (days) :: ', lookback_period)
     print('Simulation Tickers', simulationTickers)
+    print('possible_outcomes', possible_outcomes)
 
     openAccuracy = np.array([])
     closeAccuracy = np.array([])
@@ -156,13 +158,14 @@ def getTickerAccuracyAndPredictionMetrics(model, ticker, date, lookback_period, 
     if lookback_dataframe.shape[0] < 21:
         print("Not enough data in Lookback Dataframe, skipping")
         return None
-    predictionDF = getPredictions(model=model, dataframe=lookback_dataframe, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
-    print()
+    predictionDF = getPredictionsNew(model=model, dataframe=lookback_dataframe, possible_outcomes=possible_outcomes, prediction_period=prediction_period)
     maxDiff = getMaxDiffInPrediction(lookback_dataframe.iloc[-1]['close'], predictionDF, predictionPeriod=prediction_period)
     # --- Accuracy Calculations ---
-    verfied_opens = verification_dataframe['open'].to_numpy()
+    # verfied_opens = verification_dataframe['open'].to_numpy()
+    verfied_opens = verification_dataframe['high'].to_numpy()
     verfied_closes = verification_dataframe['close'].to_numpy()
-    predicted_opens = np.array(predictionDF.iloc[-prediction_period:]['open'])
+    # predicted_opens = np.array(predictionDF.iloc[-prediction_period:]['open'])
+    predicted_opens = np.array(predictionDF.iloc[-prediction_period:]['high'])
     predicted_closes = np.array(predictionDF.iloc[-prediction_period:]['close'])
     openPercentages = np.abs((predicted_opens - verfied_opens) / verfied_opens)
     closePercentages = np.abs((predicted_closes - verfied_closes) / verfied_closes)
@@ -198,12 +201,13 @@ def getTickerOutlook(possible_outcomes, model_id=3, ticker="aapl", prediction_pe
         prediction_period=prediction_period
     )
 
-def getPredictionsOptimized(model, dataframe, possible_outcomes, prediction_period=14):
+def getPredictions(model, dataframe, possible_outcomes, prediction_period=10):
+    p_dataframe = dataframe
     results = np.array([])
-    print("START results", results)
-    for _ in itertools.repeat(None, prediction_period):
-        data = getFeatures(p_dataframe)
-        # Reduce to one iloc
+    for index in range(0, prediction_period):
+        # data = getFeatures(p_dataframe)
+        data = getFeatures(p_dataframe.iloc[-16:])
+        print('features', data)
         close_price = p_dataframe.iloc[-1]['close']
         # high_price = p_dataframe.iloc[-1]['high']
         # low_price = p_dataframe.iloc[-1]['Low']
@@ -220,6 +224,7 @@ def getPredictionsOptimized(model, dataframe, possible_outcomes, prediction_peri
             data,
             possible_outcomes=possible_outcomes
         )
+        print('PREDICTIONS:: (open, close, rsi)', delta_open, delta_close, _)
 
         # hit_upper_band = close_price >= (bands['upper'][-1] * 0.96) or open_price >= (bands['upper'][-1] * 0.96)
         # hit_lower_band = close_price <= (bands['lower'][-1] * 1.04) or open_price <= (bands['lower'][-1] * 1.04)
@@ -230,7 +235,6 @@ def getPredictionsOptimized(model, dataframe, possible_outcomes, prediction_peri
 
         predicted_open = close_price * (1 + (delta_open))
         predicted_close = predicted_open * (1 + (delta_close * mutiplier))
-        # predicted_d_high = predicted_open * (1 + frac_high)
 
         # Use numpy here and concat array's instead of DF to improve performance?
         p_dataframe = pd.concat([p_dataframe, pd.DataFrame({
@@ -245,11 +249,12 @@ def getPredictionsOptimized(model, dataframe, possible_outcomes, prediction_peri
 
     return p_dataframe
 
-def getPredictions(model, dataframe, possible_outcomes, prediction_period=10):
+def getPredictionsNew(model, dataframe, possible_outcomes, prediction_period=10):
     p_dataframe = dataframe
-    results = np.array([])
     for index in range(0, prediction_period):
-        data = getFeatures(p_dataframe)
+        # data = getFeatures(p_dataframe)
+        data = getFeaturesNew(p_dataframe)
+        # print('features', data)
         close_price = p_dataframe.iloc[-1]['close']
         # high_price = p_dataframe.iloc[-1]['high']
         # low_price = p_dataframe.iloc[-1]['Low']
@@ -261,29 +266,31 @@ def getPredictions(model, dataframe, possible_outcomes, prediction_period=10):
         mutiplier = 1
         bands = analysis.getBollingerBandWidths(
             p_dataframe['close'].to_numpy())
-        delta_open, delta_close, _ = getPredictedFeatures(
+        delta_close, delta_high, delta_low = getPredictedFeatures(
             model,
             data,
             possible_outcomes=possible_outcomes
         )
+        print('PREDICTIONS:: (delta_close, delta_high, delta_low)', delta_close, delta_high, delta_low)
 
         # hit_upper_band = close_price >= (bands['upper'][-1] * 0.96) or open_price >= (bands['upper'][-1] * 0.96)
         # hit_lower_band = close_price <= (bands['lower'][-1] * 1.04) or open_price <= (bands['lower'][-1] * 1.04)
-        hit_upper_band = close_price >= (bands['upper'][-1] * 0.96)
-        hit_lower_band = close_price <= (bands['lower'][-1] * 1.04)
-        if hit_upper_band and delta_close >= 0: mutiplier = -0.5
-        if hit_lower_band and delta_close <= 0: mutiplier = -0.5
+        # hit_upper_band = close_price >= (bands['upper'][-1] * 0.96)
+        # hit_lower_band = close_price <= (bands['lower'][-1] * 1.04)
+        # if hit_upper_band and delta_close >= 0: mutiplier = -0.5
+        # if hit_lower_band and delta_close <= 0: mutiplier = -0.5
 
-        predicted_open = close_price * (1 + (delta_open))
-        predicted_close = predicted_open * (1 + (delta_close * mutiplier))
-        # predicted_d_high = predicted_open * (1 + frac_high)
+        # ---- NEW ----
+        predicted_close = close_price * (1 + (delta_close * mutiplier))
+        predicted_high = close_price * (1 + delta_high)
+        predicted_low = close_price * (1 + delta_low)
 
         # Use numpy here and concat array's instead of DF to improve performance?
         p_dataframe = pd.concat([p_dataframe, pd.DataFrame({
             'date': ['date'],
-            'open': [predicted_open],
-            'high': [0],
-            'low': [0],
+            'open': [close_price],
+            'high': [predicted_high],
+            'low': [predicted_low],
             'close': [predicted_close],
             'adj_close': [0],
             'volume': [0],
@@ -297,6 +304,10 @@ def getPredictedFeatures(model, data, possible_outcomes):
     for possible_outcome in tqdm(possible_outcomes, disable=isProduction):
         total_data = np.row_stack((data, possible_outcome))
         outcome_score.append(model.score(total_data))
+
+    # print('total_data :: ', total_data)
+    # print('outcome_score :: ', outcome_score)
+    # print('outcome_score :: ', np.argmax(outcome_score))
 
     return possible_outcomes[np.argmax(outcome_score)]
 
@@ -319,12 +330,34 @@ def getFeatures(dataframe):
         np.array(rsis)
     ))
 
+def getFeaturesNew(dataframe):
+    open_price = np.array(dataframe['open'])
+    close_price = np.array(dataframe['close'])
+    high_price = np.array(dataframe['high'])
+    low_price = np.array(dataframe['low'])
+
+    def fc(target, base): return 100 if base == 0 else (target - base) / base
+    vfunc = vectorize(fc)
+
+    frac_change = vfunc(close_price, open_price)
+    frac_high = vfunc(high_price, open_price)
+    frac_low = vfunc(low_price, open_price)
+
+    return np.column_stack((frac_change, frac_high, frac_low))
+
 def getPossibleOutcomes(n_steps_delta_open=20, n_steps_delta_close=20, n_steps_rsis=80):
     delta_open_range = np.linspace(-0.2, 0.2, n_steps_delta_open)
     delta_close_range = np.linspace(-0.2, 0.2, n_steps_delta_close)
     rsis_range = np.linspace(1, 100, n_steps_rsis)
 
     return np.array(list(itertools.product(delta_open_range, delta_close_range, rsis_range)))
+
+def getPossibleOutcomesNew(n_steps_delta_close=20, n_steps_delta_high=20, n_steps_delta_low=20):
+    delta_close_range = np.linspace(-0.1, 0.1, n_steps_delta_close)
+    delta_high_range = np.linspace(0, 0.1, n_steps_delta_high)
+    delta_low_range = np.linspace(-0.1, 0, n_steps_delta_low)
+
+    return np.array(list(itertools.product(delta_close_range, delta_high_range, delta_low_range)))
 
 def plotPredictedCloses(predictions, verifications, ticker):
     fig = plt.figure()
