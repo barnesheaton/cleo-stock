@@ -150,7 +150,6 @@ def getTickerAccuracyAndPredictionMetrics(model, ticker, date, lookback_period, 
     print(f"[=== Ticker ({ticker}) ===]")
     lookback_dataframe = Database().getTickerDataToDate(ticker, date, lookback_period)
     verification_dataframe = Database().getTickerDataAfterDate(ticker, date + timedelta(days=1), prediction_period)
-    # TODO Change 51 to size of observation window from Model
     if lookback_dataframe.shape[0] < observation_period + 1:
         print("Not enough data in Lookback Dataframe to make prediction, skipping")
         return None
@@ -193,7 +192,7 @@ def plotVerificaitonForTicker(ticker, model_id, prediction_period, lookback_peri
     plt.gca().xaxis.set_major_locator(mdates.DayLocator())
 
     # Must be able to construct at least one sequence of observations
-    # TODO move as much inout verifcation to forms as possible
+    # TODO move as much input verifcation to forms as possible
     if lookback_period < stock_model.observation_period + 1 or input_length < lookback_period:
         return
 
@@ -214,6 +213,8 @@ def plotVerificaitonForTicker(ticker, model_id, prediction_period, lookback_peri
             prediction_period=prediction_period,
             observation_period=stock_model.observation_period
         )
+        print(prediction)
+        # Set dates on prediction
         prediction['date'] = dataframe.iloc[0 : end_index + prediction_period ]['date'].to_numpy()
 
         axes.plot(prediction.iloc[-prediction_period : ]['date'], prediction.iloc[-prediction_period : ]['close'], '--', color='red')
@@ -225,31 +226,35 @@ def plotVerificaitonForTicker(ticker, model_id, prediction_period, lookback_peri
 
 
 def getPredictionsFromTickerData(model, dataframe, prediction_period=10, observation_period=50):
-    p_dataframe = dataframe
-    for _ in range(0, prediction_period):
-        observations = getObservationsFromTickerData(p_dataframe, observation_period=observation_period)
-        possible_outcomes = getPossibleOutcomesFromObservation(observations[-1], steps=10000)
+    prediction_df = dataframe
+    for index in range(0, prediction_period):
+        observations = getObservationsFromTickerData(prediction_df, observation_period=observation_period)
+        if index == 0:
+            possible_outcomes = getPossibleOutcomesFromObservation(observations[-1], steps=4000, max_change_percent=0.01)
+        else:
+            possible_outcomes = getPossibleOutcomesFromObservation(observations[-1], steps=4000, max_change_percent=0.01)
+
         predicted_observation = getPredictedFeatures(model, observations, possible_outcomes)
         predicted_close = predicted_observation[-1]
-        # Use numpy here and concat array's instead of DF to improve performance?
-        p_dataframe = pd.concat([p_dataframe, pd.DataFrame({
-            'date': ['date'],
-            'open': [0],
-            'high': [0],
-            'low': [0],
-            'close': [predicted_close],
-            'adj_close': [0],
-            'volume': [0],
-        })])
+        prediction_df = prediction_df.append(pd.Series({
+            'date': 'date',
+            'open': 0,
+            'high': 0,
+            'low': 0,
+            'close': predicted_close,
+            'adj_close': 0,
+            'volume': 0
+        }), ignore_index=True)
 
-    return p_dataframe
+    return prediction_df
 
-def getPossibleOutcomesFromObservation(observation, steps=1000):
+# TODO modify so fist prediction cannot be more than some Initial change
+def getPossibleOutcomesFromObservation(observation, steps=1000, max_change_percent=0.03):
     # mean = np.mean(observation)
     start = observation[-1]
     possible_outcomes =[]
     # Stock can only move plus or minus 3%
-    frac_change_range = np.linspace(-0.03, 0.03, steps)
+    frac_change_range = np.linspace(-1 * max_change_percent, max_change_percent, steps)
     isProduction = app.config['FLASK_ENV'] == 'production'
     for change in tqdm(frac_change_range, disable=isProduction):
         new_po = np.append(observation[1:], (start + (start * change)))
