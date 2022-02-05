@@ -66,13 +66,13 @@ class Database():
             )
             metadata.create_all()
 
-    def getTickerTablesList(self, samplePercent=None, tickerString=None):
+    def getTickerTablesList(self, sample_percent=None, tickerString=None):
         tickers = utils.getTickerList()
         tables = self.connection.table_names()
         tickerTables = utils.intersection(tickers, tables)
 
-        if samplePercent:
-            k = len(tickerTables) * float(samplePercent) // 100
+        if sample_percent:
+            k = len(tickerTables) * float(sample_percent) // 100
             indicies = random.sample(range(len(tickerTables)), int(k))
             sampledTickerTables = [tickerTables[i] for i in indicies]
             return sampledTickerTables
@@ -82,8 +82,24 @@ class Database():
 
         return tickerTables
 
-    def getTickerData(self, table):
-        return pd.read_sql_table(table, self.connection)
+    def getTickerData(self, table, limit=None):
+        if limit:
+            sql = f"""SELECT
+                        *
+                    FROM (
+                        SELECT
+                            *
+                        FROM
+                            {table}
+                        ORDER BY
+                            {table}.date DESC) AS {table}_temp
+                    LIMIT {limit}
+            """
+            return pd.read_sql(sql=sql, con=self.connection).iloc[::-1]
+        else:
+            return pd.read_sql_table(table, self.connection)
+
+    
 
     def getTickerDataToDate(self, table, date, days):
         if (days == 0 or days == 'max'):

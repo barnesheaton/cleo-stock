@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+  <div class="container" id="simulation">
+    {% from "_formhelpers.html" import render_field %}
+
+    <form method="post" novalidate="novalidate" class="form">
+      {{ plotForm.csrf_token }}
+      {{ plotForm.hidden_tag() }}
+      <div class="row">
+        {% for field in plotForm %}
+          <div class="form-group">
+            {{ render_field(field) }}
+          </div>
+        {% endfor %}
+      </div>
+      <div class="form-group">
+        {{ plotForm.submit(class="btn btn-primary")}}
+      </div>
+    </form>
+  </div>
+{% endblock %}

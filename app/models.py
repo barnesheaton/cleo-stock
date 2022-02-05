@@ -26,9 +26,8 @@ class Task(db.Model):
 class StockModel(db.Model):
     id = db.Column('id', db.Integer(), primary_key=True, autoincrement=True)
     tickers = db.Column(db.ARRAY(db.String(128)))
-    features = db.Column(db.Integer())
+    observation_period = db.Column(db.Integer())
     pickle = db.Column(db.PickleType())
-    possible_outcomes = db.Column(db.JSON())
     name = db.Column(db.String(128))
     description = db.Column(db.String(128))
     date = db.Column(db.DateTime())

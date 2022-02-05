@@ -1,7 +1,7 @@
 import os
 from app import app
 from flask import render_template
-from app.forms import UpdateStockDataForm, TrainModelForm, SimulateForm
+from app.forms import PlotForm, UpdateStockDataForm, TrainModelForm, SimulateForm
 from app.session import Session
 from app.models import StockModel
 from flask import request
@@ -30,9 +30,10 @@ def models():
     if request.method == 'POST' and trainModelForm.validate():
         session.launch_task(
             'trainModelTask',
-            modelName=trainModelForm.name.data,
-            modelDescription=trainModelForm.description.data,
-            samplePercent=trainModelForm.samplePercent.data,
+            model_name=trainModelForm.name.data,
+            model_description=trainModelForm.description.data,
+            observation_period=int(trainModelForm.observation_period.data),
+            sample_percent=trainModelForm.sample_percent.data,
             tickerString=trainModelForm.tickers.data
         )
 
@@ -57,3 +58,20 @@ def simulations():
         )
 
     return render_template('simulations.html', title='Simulate', simulateForm=simulateForm, session=session)
+
+@app.route('/plots', methods=['GET', 'POST'])
+def plots():
+    session = Session()
+    plotForm = PlotForm()
+    plotForm.model.choices = [(model.id, f"{model.name} - {model.date}") for model in StockModel.query.all()]
+
+    if request.method == 'POST' and plotForm.validate():
+        session.launch_task(
+            'plotTask',
+            ticker=plotForm.tickers.data,
+            model_id=int(plotForm.model.data),
+            lookback_period=int(plotForm.lookback.data),
+            prediction_period=int(plotForm.lookahead.data),
+        )
+
+    return render_template('plots.html', title='Simulate', plotForm=plotForm, session=session)
