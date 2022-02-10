@@ -3,6 +3,7 @@ Build and Test predictive HMM Models that forecast future stock ticker values
 
 #### Steps to run
 1. Install requirements ```pip install -r requirements.txt```
-2.  Start Flask server ```flask run```
-3. Start a redis server with ```redis-server```
-4. Start the rq worker with ```rq worker cleo-tasks```
+2. Start up a Postgres DB with ```postgres -D /usr/local/var/postgres```
+3. Start Flask server ```flask run```
+4. Start a redis server with ```redis-server```
+5. Start the rq worker with ```rq worker cleo-tasks```
