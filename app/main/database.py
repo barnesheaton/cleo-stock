@@ -52,6 +52,9 @@ class Database():
         dataframe.drop(columns=['_merge'], inplace=True)
         dataframe.to_sql(table, con=self.connection, if_exists='append', index=False)
 
+    def savePredictions(self, dataframe):
+        dataframe.to_sql('predictions', con=self.connection, if_exists='append', index=False)
+
     def createTickerTable(self, table):
         if not self.connection.dialect.has_table(self.connection, table):
             metadata = MetaData(self.connection)

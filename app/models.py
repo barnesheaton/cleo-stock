@@ -1,13 +1,29 @@
+from enum import unique
 from flask import current_app
 from app import db
 import redis
 import rq
 
+class Predictions(db.Model):
+    id = db.Column('id', db.Integer(), primary_key=True, autoincrement=True)
+    model_id = db.Column(db.Integer(), db.ForeignKey('stock_model.id'))
+    task_id = db.Column(db.Integer(), db.ForeignKey('task.id'))
+    ticker = db.Column(db.String(128), nullable=False)
+    sequence_index = db.Column(db.Integer())
+    date = db.Column('date', db.Date(), index=True)
+    open = db.Column('open', db.Float())
+    high = db.Column('high', db.Float())
+    low = db.Column('low', db.Float())
+    close = db.Column('close', db.Float())
+    adj_close = db.Column('adj_close', db.Float())
+    volume = db.Column('volume', db.Float())
+
 class Task(db.Model):
-    id = db.Column(db.String(36), primary_key=True)
+    id = db.Column('id', db.Integer(), primary_key=True, autoincrement=True)
     name = db.Column(db.String(128), index=True)
     description = db.Column(db.String(128))
     complete = db.Column(db.Boolean, default=False, nullable=False)
+    predictions = db.relationship("Predictions")
 
     def __repr__(self):
         return f"Task - ${self.name} Complete => [${self.complete}]"
@@ -24,7 +40,7 @@ class Task(db.Model):
         return job.meta.get('progress', 0) if job is not None else 100
 
 class StockModel(db.Model):
-    id = db.Column('id', db.Integer(), primary_key=True, autoincrement=True)
+    id = db.Column('id', db.Integer(), primary_key=True, autoincrement=True, unique=True)
     tickers = db.Column(db.ARRAY(db.String(128)))
     observation_period = db.Column(db.Integer())
     pickle = db.Column(db.PickleType())
@@ -32,6 +48,7 @@ class StockModel(db.Model):
     description = db.Column(db.String(128))
     date = db.Column(db.DateTime())
     models = db.relationship("Simulation")
+    predictions = db.relationship("Predictions")
 
     def __repr__(self):
         return f"Model: [{self.name}] || Date: [{self.date}]"
@@ -49,30 +66,3 @@ class Simulation(db.Model):
     starting_capital = db.Column(db.Float())
     ending_capital = db.Column(db.Float())
     complete = db.Column(db.Boolean, default=False, nullable=False)
-
-class Bar(db.Model):
-    date = db.Column(db.String(128), primary_key=True)
-    open = db.Column(db.Float())
-    high = db.Column(db.Float())
-    low = db.Column(db.Float())
-    close = db.Column(db.Float())
-    adj_close = db.Column(db.Float())
-    volume = db.Column(db.Float())
-
-    def __repr__(self):
-        return f"Bar: [{self.ticker}] || Date: [{self.date}] || Close: [{self.close}]"
-
-# class PredictedStock(db.Model):
-#     prediction_id = db.Column(db.String(36), primary_key=True)
-#     ticker = db.Column(db.String(128))
-#     date = db.Column(db.String(128))
-#     open = db.Column(db.Float())
-#     high = db.Column(db.Float())
-#     low = db.Column(db.Float())
-#     close = db.Column(db.Float())
-#     adj_close = db.Column(db.Float())
-#     volume = db.Column(db.Float())
-
-# class Transaction(db.Model):
-#     id = db.Column(db.String(36), primary_key=True)
-#     ticker = db.Column(db.String(128))

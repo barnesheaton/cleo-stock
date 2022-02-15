@@ -16,7 +16,7 @@ migrate = Migrate(app, db)
 bootstrap = Bootstrap(app)
 
 from app import routes
-from app.models import Task, Bar
+from app.models import Task
 
 def create_app(config_class=Config):
     db.init_app(app)
@@ -27,4 +27,4 @@ def create_app(config_class=Config):
 
 @app.shell_context_processor
 def make_shell_context():
-    return {'db': db, 'Task': Task, 'Bar': Bar, }
+    return {'db': db, 'Task': Task, }

@@ -3,9 +3,19 @@ from app import db
 from app.models import Task, StockModel
 
 class Session():
-    def launch_task(self, name, *args, **kwargs):
-        rq_job = current_app.task_queue.enqueue('app.tasks.' + name, *args, **kwargs)
-        task = Task(id=rq_job.get_id(), name=name)
+    def create_task(self, name):
+        task = Task(name=name)
+        db.session.add(task)
+        db.session.commit()
+        return task
+
+    def launch_task(self, task, *args, **kwargs):
+        current_app.task_queue.enqueue('app.tasks.' + task.name, *args, **kwargs)
+
+    def create_and_launch_task(self, name, *args, **kwargs):
+        print(name)
+        current_app.task_queue.enqueue('app.tasks.' + name, *args, **kwargs)
+        task = Task(name=name)
         db.session.add(task)
         db.session.commit()
         return task

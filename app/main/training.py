@@ -1,16 +1,14 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 import math
 import pickle
 import matplotlib.pyplot as plt
-import app.main.analysis as analysis
 
 from tqdm import tqdm
 from datetime import datetime, timedelta
 from hmmlearn.hmm import GaussianHMM
-from pomegranate import HiddenMarkovModel, NormalDistribution
+# from pomegranate import HiddenMarkovModel, NormalDistribution
 
 from app.main.database import Database
 from app.main.utils import printLine, printData, xor
@@ -139,8 +137,6 @@ def simulate(
     simulation.close_accuracy = closeAccuracy
     db.session.commit()
 
-    plt.show()
-
     printLine("Results")
     printData('closeAccuracy', closeAccuracy)
 
@@ -169,8 +165,9 @@ def getTickerAccuracyAndPredictionMetrics(model, ticker, date, lookback_period, 
 # TODO add absolute value to deltas to account for dips as well
 def getMaxDiffInPrediction(price, dataframe, predictionPeriod=14):
     closeDeltas = (np.array(dataframe.iloc[-predictionPeriod:]['close']) - price) / price
-    openDeltas = (np.array(dataframe.iloc[-predictionPeriod:]['open']) - price) / price
-    return np.nanmax(np.concatenate([closeDeltas, openDeltas]))
+    return np.nanmax(closeDeltas)
+    # openDeltas = (np.array(dataframe.iloc[-predictionPeriod:]['open']) - price) / price
+    # return np.nanmax(np.concatenate([closeDeltas, openDeltas]))
     
 def getTickerOutlook(model_id=3, ticker="aapl", prediction_period=14):
     dataframe = Database().getTickerData(ticker)
@@ -188,8 +185,8 @@ def plotVerificaitonForTicker(ticker, model_id, prediction_period, lookback_peri
     printLine('plotVerificaitonForTicker')
     fig = plt.figure()
     axes = fig.add_subplot(111)
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
-    plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+    # plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
+    # plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval = 10))
 
     # Must be able to construct at least one sequence of observations
     # TODO move as much input verifcation to forms as possible
@@ -204,6 +201,7 @@ def plotVerificaitonForTicker(ticker, model_id, prediction_period, lookback_peri
     printData('lookback_period', lookback_period)
     printData('observation_period', stock_model.observation_period)
     for index in range(0, increments):
+        printLine('Predicting along increment')
         end_index = (index * prediction_period) + lookback_period
         input_data = dataframe.iloc[0 : end_index]
 
@@ -213,16 +211,19 @@ def plotVerificaitonForTicker(ticker, model_id, prediction_period, lookback_peri
             prediction_period=prediction_period,
             observation_period=stock_model.observation_period
         )
-        print(prediction)
         # Set dates on prediction
         prediction['date'] = dataframe.iloc[0 : end_index + prediction_period ]['date'].to_numpy()
-
         axes.plot(prediction.iloc[-prediction_period : ]['date'], prediction.iloc[-prediction_period : ]['close'], '--', color='red')
+        prediction['ticker'] = ticker
+        prediction['model_id'] = model_id
+        print(prediction)
+        Database().savePredictions(prediction.iloc[-prediction_period:])
+
 
     axes.plot(dataframe['date'], dataframe['close'], color='black', alpha=0.5)
 
+    # plt.gcf().autofmt_xdate()
     plt.show()
-    plt.gcf().autofmt_xdate()
 
 
 def getPredictionsFromTickerData(model, dataframe, prediction_period=10, observation_period=50):
@@ -248,12 +249,10 @@ def getPredictionsFromTickerData(model, dataframe, prediction_period=10, observa
 
     return prediction_df
 
-# TODO modify so fist prediction cannot be more than some Initial change
 def getPossibleOutcomesFromObservation(observation, steps=1000, max_change_percent=0.03):
     # mean = np.mean(observation)
     start = observation[-1]
     possible_outcomes =[]
-    # Stock can only move plus or minus 3%
     frac_change_range = np.linspace(-1 * max_change_percent, max_change_percent, steps)
     isProduction = app.config['FLASK_ENV'] == 'production'
     for change in tqdm(frac_change_range, disable=isProduction):
@@ -271,7 +270,7 @@ def getPredictedFeatures(model, observations, possible_outcomes):
         outcome_score.append(model.score(total_data))
         # outcome_score.append(model.log_probability(total_data))
 
-    print(f'Highest Prob. Outcome index: [{np.argmax(outcome_score)}]')
+    # print(f'Highest Prob. Outcome index: [{np.argmax(outcome_score)}]')
     return possible_outcomes[np.argmax(outcome_score)]
 
 def getObservationsFromTickerData(dataframe, observation_period):

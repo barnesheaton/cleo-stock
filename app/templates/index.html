@@ -1,41 +1,31 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-<h4>Flask Environment - {{ env }}</h4>
-<!-- <h3>In Progress</h3>
-{% with tasks = session.get_tasks_in_progress() %}
-{% if tasks %}
-{% for task in tasks %}
-<div>
-    {{ task.name }}
-    <span id="{{ task.id }}-progress">{{ task.get_progress() }}</span>%
-</div>
-{% endfor %}
-{% endif %}
-{% endwith %}
-
-<h3>Completed</h3>
-{% with completed_tasks = session.get_tasks_completed() %}
-{% if completed_tasks %}
-{% for task in completed_tasks %}
-<div>
-    {{ task.name }}
-</div>
-{% endfor %}
-{% endif %}
-{% endwith %} -->
-
-<form action="" method="post" novalidate>
+  <h4>Flask Environment -
+    {{ env }}</h4>
+  <form action="" method="post" novalidate="novalidate">
     <p>
-        {{ updateForm.start(size=32) }}
+      {{ updateForm.start(size=32) }}
     </p>
     <p>
-        {{ updateForm.end(size=32) }}
+      {{ updateForm.end(size=32) }}
     </p>
     <p>
-        {{ updateForm.period(size=32) }}
+      {{ updateForm.period(size=32) }}
     </p>
     <p>{{ updateForm.submit() }}</p>
-</form>
+  </form>
+
+  <div id='chart' class='chart' ”="”"></div>
+
+  <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+  <script type='text/javascript'>
+    var graphs = {
+      {
+        graphJSON | safe
+      }
+    };
+    Plotly.plot('chart', graphs, {});
+  </script>
 
 {% endblock %}

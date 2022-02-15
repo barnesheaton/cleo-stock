@@ -1,10 +1,16 @@
 import os
+import json
 from app import app
 from flask import render_template
+
 from app.forms import PlotForm, UpdateStockDataForm, TrainModelForm, SimulateForm
+from app.main.database import Database
 from app.session import Session
 from app.models import StockModel
 from flask import request
+
+import plotly
+import plotly.express as px
 
 models_dir = os.path.join(app.instance_path, 'models')
 os.makedirs('uploads', exist_ok=True)
@@ -16,10 +22,16 @@ def index():
     session = Session()
     updateForm = UpdateStockDataForm()
 
-    if updateForm.is_submitted():
-        session.launch_task('updateTickerTablesTask', period=updateForm.period.data, start=int(updateForm.start.data), end=int(updateForm.end.data))
+    graphJSON = None
 
-    return render_template('index.html', title='Home', updateForm=updateForm, session=session, env=app.config['FLASK_ENV'])
+    if updateForm.is_submitted():
+        session.create_and_launch_task('updateTickerTablesTask', period=updateForm.period.data, start=int(updateForm.start.data), end=int(updateForm.end.data))
+
+    df = Database().getTickerData(table='aapl')
+    fig = px.line(df, x='date', y="close")
+    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
+    return render_template('index.html', title='Home', updateForm=updateForm, session=session, env=app.config['FLASK_ENV'], graphJSON=graphJSON)
 
 
 @app.route('/models', methods=['GET', 'POST'])
@@ -28,7 +40,7 @@ def models():
     trainModelForm = TrainModelForm()
 
     if request.method == 'POST' and trainModelForm.validate():
-        session.launch_task(
+        session.create_and_launch_task(
             'trainModelTask',
             model_name=trainModelForm.name.data,
             model_description=trainModelForm.description.data,
@@ -46,7 +58,7 @@ def simulations():
     simulateForm.model.choices = [(model.id, f"{model.name} - {model.date}") for model in StockModel.query.all()]
 
     if request.method == 'POST' and simulateForm.validate():
-        session.launch_task(
+        session.create_and_launch_task(
             'simulateTask',
             model_id=int(simulateForm.model.data),
             lookback_period=int(simulateForm.lookback.data),
