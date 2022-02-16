@@ -48,6 +48,7 @@ class PlotForm(FlaskForm):
     tickers = StringField(label="Tickers", render_kw={"placeholder": "A string of tickers"})
     lookback = DecimalField(label='Lookback Period', places=0 , render_kw={"placeholder": "Lookback Period"})
     lookahead = DecimalField(label='Prediction Period', render_kw={"placeholder": "Prediction Period"})
+    limit = DecimalField(label='Ticker Data Limit', validators=[Optional()], render_kw={"placeholder": "optional limit on Ticker Data"})
     submit = SubmitField()
 
 class DisplayPlotForm(FlaskForm):
