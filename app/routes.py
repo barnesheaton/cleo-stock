@@ -14,6 +14,7 @@ from flask import request
 import plotly
 import plotly.express as px
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 models_dir = os.path.join(app.instance_path, 'models')
 os.makedirs('uploads', exist_ok=True)
@@ -96,20 +97,25 @@ def displayPlots():
     (session, plotForm, displayPlotForm, graphJSON) = plotPageInit()
 
     if request.method == 'POST' and displayPlotForm.validate():
-
         database = Database()
-        printLine('displayPlots')
         task_id = int(displayPlotForm.task.data)
-        p_dataframe = database.getPlotData(task_id)
         tickers = database.getTickersInPlotTask(task_id)
-        print(p_dataframe)
+
         print(tickers)
-        tick = tickers[0]
-        # df = database.getTickerData(table='aapl')
-        verification_data = database.getTickerData(table=tick)
-        print(verification_data)
-        fig = px.line(verification_data, x='date', y="close")
-        fig = fig.add_trace(go.Line(x = p_dataframe['date'], y = p_dataframe['close']))
+
+        fig = make_subplots(rows=len(tickers), cols=1, row_titles=tickers)
+        for index, ticker in enumerate(tickers):
+            p_dataframe = database.getPlotData(task_id, ticker)
+            start_date = p_dataframe.iloc[0]['date']
+            verification_data = database.getTickerDataAfterDate(table=ticker, date=start_date, days='max')
+            # fig.append_trace(go.Ohlc(x=verification_data['date'],
+            #                             open=verification_data['open'],
+            #                             high=verification_data['high'],
+            #                             low=verification_data['low'],
+            #                             close=verification_data['close']), index + 1, 1)
+            fig.append_trace(go.Line(x=verification_data['date'], y=verification_data['close']), index + 1, 1)
+            fig.append_trace(go.Line(x=p_dataframe['date'], y=p_dataframe['close']), index + 1, 1)
+
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
     return render_template('plots.html', title='Plots', plotForm=plotForm, displayPlotForm=displayPlotForm, session=session, graphJSON=graphJSON)

@@ -182,50 +182,43 @@ def plotVerificaitonForTicker(tickers, task_id, model_id, prediction_period, loo
     plot_tickers = Database().getTickerTablesList(tickerString=tickers)
     stock_model = StockModel.query.get(model_id)
     loaded_model = pickle.loads(stock_model.pickle)
-    input_length = dataframe.shape[0]
-    dataframe = Database().getTickerData(tickers, limit=limit)
 
-    # for ticker in plot_tickers:
+    print(plot_tickers)
 
-    # Must be able to construct at least one sequence of observations
-    # TODO move as much input verifcation to forms as possible
-    if lookback_period < stock_model.observation_period + 1 or input_length < lookback_period:
-        return
+    for ticker in plot_tickers:
+        dataframe = Database().getTickerData(ticker, limit=limit)
+        input_length = dataframe.shape[0]
 
-    # Make a prediction in increments of [prediction_period] along time axis of data
-    increments = math.floor((input_length - lookback_period) / prediction_period)
+        # Must be able to construct at least one sequence of observations
+        # TODO move as much input verifcation to forms as possible
+        if lookback_period < stock_model.observation_period + 1 or input_length < lookback_period:
+            return
 
-    printData('increments', increments)
-    printData('input_length', input_length)
-    printData('lookback_period', lookback_period)
-    printData('observation_period', stock_model.observation_period)
-    printData('prediction_period', prediction_period)
-    printData('task_id', task_id)
-    for index in range(0, increments):
-        # printLine('Predicting along increment')
-        end_index = (index * prediction_period) + lookback_period
-        input_data = dataframe.iloc[0 : end_index]
+        # Make a prediction in increments of [prediction_period] along time axis of data
+        increments = math.floor((input_length - lookback_period) / prediction_period)
+        # printData('increments', increments)
+        # printData('input_length', input_length)
+        # printData('lookback_period', lookback_period)
+        # printData('observation_period', stock_model.observation_period)
+        # printData('prediction_period', prediction_period)
+        # printData('task_id', task_id)
+        for index in range(0, increments):
+            # printLine('Predicting along increment')
+            end_index = (index * prediction_period) + lookback_period
+            input_data = dataframe.iloc[0 : end_index]
 
-        prediction = getPredictionsFromTickerData(
-            loaded_model,
-            dataframe=input_data,
-            prediction_period=prediction_period,
-            observation_period=stock_model.observation_period
-        )
-        # Set dates on prediction
-        prediction['date'] = dataframe.iloc[0 : end_index + prediction_period ]['date'].to_numpy()
-        prediction['ticker'] = tickers
-        prediction['model_id'] = model_id
-        prediction['task_id'] = task_id
-        axes.plot(prediction.iloc[-prediction_period : ]['date'], prediction.iloc[-prediction_period : ]['close'], '--', color='red')
-        Database().savePredictions(prediction.iloc[-prediction_period:])
-
-
-    axes.plot(dataframe['date'], dataframe['close'], color='black', alpha=0.5)
-
-    plt.gcf().autofmt_xdate()
-    plt.show()
-
+            prediction = getPredictionsFromTickerData(
+                loaded_model,
+                dataframe=input_data,
+                prediction_period=prediction_period,
+                observation_period=stock_model.observation_period
+            )
+            # Set columns on predictions
+            prediction['date'] = dataframe.iloc[0 : end_index + prediction_period ]['date'].to_numpy()
+            prediction['ticker'] = ticker
+            prediction['model_id'] = model_id
+            prediction['task_id'] = task_id
+            Database().savePredictions(prediction.iloc[-prediction_period:])
 
 def getPredictionsFromTickerData(model, dataframe, prediction_period=10, observation_period=50):
     prediction_df = dataframe
