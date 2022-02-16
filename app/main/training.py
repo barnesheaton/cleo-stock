@@ -177,7 +177,7 @@ def getTickerOutlook(model_id=3, ticker="aapl", prediction_period=14):
     predicitons = getPredictionsFromTickerData(loaded_model, dataframe, prediction_period=prediction_period)
     print('predicitons', predicitons)
 
-def plotVerificaitonForTicker(tickers, task_id, model_id, prediction_period, lookback_period, limit=300):
+def plotVerificaitonForTicker(tickers, task_id, model_id, prediction_period, lookback_period, limit=None):
     printLine('plotVerificaitonForTicker')
     plot_tickers = Database().getTickerTablesList(tickerString=tickers)
     stock_model = StockModel.query.get(model_id)
