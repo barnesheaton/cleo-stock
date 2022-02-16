@@ -49,3 +49,7 @@ class PlotForm(FlaskForm):
     lookback = DecimalField(label='Lookback Period', places=0 , render_kw={"placeholder": "Lookback Period"})
     lookahead = DecimalField(label='Prediction Period', render_kw={"placeholder": "Prediction Period"})
     submit = SubmitField()
+
+class DisplayPlotForm(FlaskForm):
+    task = SelectField(label='task', choices=[])
+    submit = SubmitField()

@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from datetime import datetime, timedelta
 from hmmlearn.hmm import GaussianHMM
+import matplotlib.dates as mdates
 # from pomegranate import HiddenMarkovModel, NormalDistribution
 
 from app.main.database import Database
@@ -40,7 +41,7 @@ def simulate(
     diversification=5
 ):
     simulation = Simulation(model_id=model_id, date=datetime.today(), start_date=start_date, end_date=end_date, starting_capital=principal, complete=False)
-    db.session.add(simulation)   
+    db.session.add(simulation)
     db.session.commit()
     current_day = start_date
 
@@ -176,17 +177,15 @@ def getTickerOutlook(model_id=3, ticker="aapl", prediction_period=14):
     predicitons = getPredictionsFromTickerData(loaded_model, dataframe, prediction_period=prediction_period)
     print('predicitons', predicitons)
 
-def plotVerificaitonForTicker(ticker, model_id, prediction_period, lookback_period):
+def plotVerificaitonForTicker(tickers, task_id, model_id, prediction_period, lookback_period, limit=300):
+    printLine('plotVerificaitonForTicker')
+    plot_tickers = Database().getTickerTablesList(tickerString=tickers)
     stock_model = StockModel.query.get(model_id)
     loaded_model = pickle.loads(stock_model.pickle)
-    dataframe = Database().getTickerData(ticker, limit=300)
     input_length = dataframe.shape[0]
+    dataframe = Database().getTickerData(tickers, limit=limit)
 
-    printLine('plotVerificaitonForTicker')
-    fig = plt.figure()
-    axes = fig.add_subplot(111)
-    # plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
-    # plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval = 10))
+    # for ticker in plot_tickers:
 
     # Must be able to construct at least one sequence of observations
     # TODO move as much input verifcation to forms as possible
@@ -200,8 +199,10 @@ def plotVerificaitonForTicker(ticker, model_id, prediction_period, lookback_peri
     printData('input_length', input_length)
     printData('lookback_period', lookback_period)
     printData('observation_period', stock_model.observation_period)
+    printData('prediction_period', prediction_period)
+    printData('task_id', task_id)
     for index in range(0, increments):
-        printLine('Predicting along increment')
+        # printLine('Predicting along increment')
         end_index = (index * prediction_period) + lookback_period
         input_data = dataframe.iloc[0 : end_index]
 
@@ -213,16 +214,16 @@ def plotVerificaitonForTicker(ticker, model_id, prediction_period, lookback_peri
         )
         # Set dates on prediction
         prediction['date'] = dataframe.iloc[0 : end_index + prediction_period ]['date'].to_numpy()
-        axes.plot(prediction.iloc[-prediction_period : ]['date'], prediction.iloc[-prediction_period : ]['close'], '--', color='red')
-        prediction['ticker'] = ticker
+        prediction['ticker'] = tickers
         prediction['model_id'] = model_id
-        print(prediction)
+        prediction['task_id'] = task_id
+        axes.plot(prediction.iloc[-prediction_period : ]['date'], prediction.iloc[-prediction_period : ]['close'], '--', color='red')
         Database().savePredictions(prediction.iloc[-prediction_period:])
 
 
     axes.plot(dataframe['date'], dataframe['close'], color='black', alpha=0.5)
 
-    # plt.gcf().autofmt_xdate()
+    plt.gcf().autofmt_xdate()
     plt.show()
 
 

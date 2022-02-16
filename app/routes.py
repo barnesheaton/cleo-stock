@@ -3,14 +3,17 @@ import json
 from app import app
 from flask import render_template
 
-from app.forms import PlotForm, UpdateStockDataForm, TrainModelForm, SimulateForm
+from app.forms import DisplayPlotForm, PlotForm, UpdateStockDataForm, TrainModelForm, SimulateForm
 from app.main.database import Database
 from app.session import Session
 from app.models import StockModel
+from app.main.utils import printLine, printData, xor
+
 from flask import request
 
 import plotly
 import plotly.express as px
+import plotly.graph_objects as go
 
 models_dir = os.path.join(app.instance_path, 'models')
 os.makedirs('uploads', exist_ok=True)
@@ -73,17 +76,52 @@ def simulations():
 
 @app.route('/plots', methods=['GET', 'POST'])
 def plots():
-    session = Session()
-    plotForm = PlotForm()
-    plotForm.model.choices = [(model.id, f"{model.name} - {model.date}") for model in StockModel.query.all()]
+    (session, plotForm, displayPlotForm, graphJSON) = plotPageInit()
 
     if request.method == 'POST' and plotForm.validate():
+        task = session.create_task('plotTask')
         session.launch_task(
-            'plotTask',
-            ticker=plotForm.tickers.data,
+            task=task,
+            tickers=plotForm.tickers.data,
+            task_id = task.id,
             model_id=int(plotForm.model.data),
             lookback_period=int(plotForm.lookback.data),
             prediction_period=int(plotForm.lookahead.data),
         )
 
-    return render_template('plots.html', title='Simulate', plotForm=plotForm, session=session)
+    return render_template('plots.html', title='Plots', plotForm=plotForm, displayPlotForm=displayPlotForm, session=session)
+
+@app.route('/plots/display', methods=['GET', 'POST'])
+def displayPlots():
+    (session, plotForm, displayPlotForm, graphJSON) = plotPageInit()
+
+    if request.method == 'POST' and displayPlotForm.validate():
+
+        database = Database()
+        printLine('displayPlots')
+        task_id = int(displayPlotForm.task.data)
+        p_dataframe = database.getPlotData(task_id)
+        tickers = database.getTickersInPlotTask(task_id)
+        print(p_dataframe)
+        print(tickers)
+        tick = tickers[0]
+        # df = database.getTickerData(table='aapl')
+        verification_data = database.getTickerData(table=tick)
+        print(verification_data)
+        fig = px.line(verification_data, x='date', y="close")
+        fig = fig.add_trace(go.Line(x = p_dataframe['date'], y = p_dataframe['close']))
+        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
+    return render_template('plots.html', title='Plots', plotForm=plotForm, displayPlotForm=displayPlotForm, session=session, graphJSON=graphJSON)
+
+def plotPageInit():
+    session = Session()
+    graphJSON = None
+
+    plotForm = PlotForm()
+    plotForm.model.choices = [(model.id, f"{model.name} - {model.date}") for model in StockModel.query.all()]
+
+    displayPlotForm = DisplayPlotForm()
+    displayPlotForm.task.choices = [(task.id, f"{task.name} - {task.id}") for task in session.get_all_tasks()]
+
+    return session, plotForm, displayPlotForm, graphJSON

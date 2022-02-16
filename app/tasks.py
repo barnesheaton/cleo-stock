@@ -18,8 +18,8 @@ def updateTickerTablesTask(*args, **kwargs):
 def simulateTask(*args, **kwargs):
     simulate(*args, **kwargs)
 
-def plotTask(ticker, model_id, prediction_period, lookback_period):
-    plotVerificaitonForTicker(ticker, model_id, prediction_period, lookback_period)
+def plotTask(*args, **kwargs):
+    plotVerificaitonForTicker(*args, **kwargs)
 
 def trainModelTask(model_name, observation_period, tickerString=None, sample_percent=None, model_description=None):
     if sample_percent:

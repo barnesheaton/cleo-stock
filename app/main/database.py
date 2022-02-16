@@ -157,3 +157,27 @@ class Database():
             """
         dataframe = pd.read_sql(sql=sql, con=self.connection)
         return dataframe
+
+    def getPlotData(self, plot_task_id):
+        sql = f"""SELECT
+                ticker, date, open, high, low, close, adj_close, volume
+            FROM
+                predictions
+            WHERE
+                predictions.task_id = {plot_task_id}
+        """
+        dataframe = pd.read_sql(sql=sql, con=self.connection)
+        return dataframe
+
+    def getTickersInPlotTask(self, plot_task_id):
+        sql = f"""SELECT
+                    ticker
+                FROM
+                    predictions
+                WHERE
+                    predictions.task_id = {plot_task_id}
+                    GROUP BY ticker
+        """
+        dataframe = pd.read_sql(sql=sql, con=self.connection)
+        tickers = dataframe['ticker'].to_numpy()
+        return tickers
