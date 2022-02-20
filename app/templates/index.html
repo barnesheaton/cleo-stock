@@ -25,6 +25,7 @@
           <th scope="col">Id</th>
           <th scope="col">Name</th>
           <th scope="col">Description</th>
+          <th scope="col">Date</th>
           <th scope="col">Complete</th>
         </tr>
       </thead>
@@ -34,6 +35,7 @@
             <th scope="row">{{task.id}}</th>
             <td>{{task.name}}</td>
             <td>{{task.description}}</td>
+            <td>{{task.date.strftime("%m/%d/%Y, %H:%M:%S") if task.date else ''}}</td>
             <td>{{task.complete}}</td>
           </tr>
         {% endfor %}
