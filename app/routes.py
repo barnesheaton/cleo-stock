@@ -88,7 +88,7 @@ def plots():
             model_id=int(plotForm.model.data),
             lookback_period=int(plotForm.lookback.data),
             prediction_period=int(plotForm.lookahead.data),
-            limit=int(plotForm.limit.data)
+            limit=plotForm.limit.data
         )
 
     return render_template('plots.html', title='Plots', plotForm=plotForm, displayPlotForm=displayPlotForm, session=session)

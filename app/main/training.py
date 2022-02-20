@@ -182,11 +182,12 @@ def plotVerificaitonForTicker(tickers, task_id, model_id, prediction_period, loo
     plot_tickers = Database().getTickerTablesList(tickerString=tickers)
     stock_model = StockModel.query.get(model_id)
     loaded_model = pickle.loads(stock_model.pickle)
+    data_limit = int(limit) if limit else None
 
     print(plot_tickers)
 
     for ticker in plot_tickers:
-        dataframe = Database().getTickerData(ticker, limit=limit)
+        dataframe = Database().getTickerData(ticker, limit=data_limit)
         input_length = dataframe.shape[0]
 
         # Must be able to construct at least one sequence of observations
