@@ -7,7 +7,6 @@ from app.forms import DisplayPlotForm, PlotForm, UpdateStockDataForm, TrainModel
 from app.main.database import Database
 from app.session import Session
 from app.models import StockModel
-from app.main.utils import printLine, printData, xor
 
 from flask import request
 
@@ -26,16 +25,10 @@ def index():
     session = Session()
     updateForm = UpdateStockDataForm()
 
-    graphJSON = None
-
     if updateForm.is_submitted():
         session.create_and_launch_task('updateTickerTablesTask', period=updateForm.period.data, start=int(updateForm.start.data), end=int(updateForm.end.data))
 
-    df = Database().getTickerData(table='aapl')
-    fig = px.line(df, x='date', y="close")
-    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-
-    return render_template('index.html', title='Home', updateForm=updateForm, session=session, env=app.config['FLASK_ENV'], graphJSON=graphJSON)
+    return render_template('index.html', title='Home', updateForm=updateForm, session=session)
 
 
 @app.route('/models', methods=['GET', 'POST'])
@@ -102,8 +95,6 @@ def displayPlots():
         task_id = int(displayPlotForm.task.data)
         tickers = database.getTickersInPlotTask(task_id)
 
-        print(tickers)
-
         fig = make_subplots(rows=len(tickers), cols=1, row_titles=tickers)
         for index, ticker in enumerate(tickers):
             p_dataframe = database.getPlotData(task_id, ticker)
@@ -129,6 +120,6 @@ def plotPageInit():
     plotForm.model.choices = [(model.id, f"{model.name} - {model.date}") for model in StockModel.query.all()]
 
     displayPlotForm = DisplayPlotForm()
-    displayPlotForm.task.choices = [(task.id, f"{task.name} - {task.id}") for task in session.get_all_tasks()]
+    displayPlotForm.task.choices = [(task.id, f"{task.name} - {task.id}") for task in session.get_task(name='plotTask')]
 
     return session, plotForm, displayPlotForm, graphJSON

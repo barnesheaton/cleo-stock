@@ -1,27 +1,43 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-  <h4>Flask Environment -
-    {{ env }}</h4>
-  <form action="" method="post" novalidate="novalidate">
-    <p>
-      {{ updateForm.start(size=32) }}
-    </p>
-    <p>
-      {{ updateForm.end(size=32) }}
-    </p>
-    <p>
-      {{ updateForm.period(size=32) }}
-    </p>
-    <p>{{ updateForm.submit() }}</p>
-  </form>
+  <div class="container" id="simulation">
+    {% from "_formhelpers.html" import render_field %}
+    <form method="post" novalidate="novalidate" class="form">
+      {{ updateForm.csrf_token }}
+      {{ updateForm.hidden_tag() }}
+      <div class="row">
+        {% for field in updateForm %}
+          <div class="form-group">
+            {{ render_field(field) }}
+          </div>
+        {% endfor %}
+      </div>
+      <div class="form-group">
+        {{ updateForm.submit(class="btn btn-primary")}}
+      </div>
+    </form>
 
-  <div id='chart' class='chart' ”="”"></div>
-
-  <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-  <script type='text/javascript'>
-    var graphs = {{ graphJSON | safe }};
-    Plotly.plot('chart', graphs, {});
-  </script>
-
+    <h4>Tasks</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Name</th>
+          <th scope="col">Description</th>
+          <th scope="col">Complete</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in session.get_all_tasks() %}
+          <tr>
+            <th scope="row">{{task.id}}</th>
+            <td>{{task.name}}</td>
+            <td>{{task.description}}</td>
+            <td>{{task.complete}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endblock %}

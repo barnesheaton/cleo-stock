@@ -1,10 +1,11 @@
 from flask import current_app
 from app import db
-from app.models import Task, StockModel
+from app.models import Task
+import datetime
 
 class Session():
     def create_task(self, name):
-        task = Task(name=name)
+        task = Task(name=name, date=datetime.datetime.today())
         db.session.add(task)
         db.session.commit()
         return task
@@ -13,9 +14,8 @@ class Session():
         current_app.task_queue.enqueue('app.tasks.' + task.name, *args, **kwargs)
 
     def create_and_launch_task(self, name, *args, **kwargs):
-        print(name)
         current_app.task_queue.enqueue('app.tasks.' + name, *args, **kwargs)
-        task = Task(name=name)
+        task = Task(name=name, date=datetime.datetime.today())
         db.session.add(task)
         db.session.commit()
         return task
@@ -30,7 +30,4 @@ class Session():
         return Task.query.filter_by(complete=True).all()
 
     def get_task(self, name):
-        return Task.query.filter_by(name=name).first()
-
-    def getAllModels(self):
-        return StockModel.query.all()
+        return Task.query.filter_by(name=name).all()

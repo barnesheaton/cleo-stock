@@ -22,6 +22,7 @@ class Task(db.Model):
     id = db.Column('id', db.Integer(), primary_key=True, autoincrement=True)
     name = db.Column(db.String(128), index=True)
     description = db.Column(db.String(128))
+    date = db.Column(db.DateTime())
     complete = db.Column(db.Boolean, default=False, nullable=False)
     predictions = db.relationship("Predictions")
 

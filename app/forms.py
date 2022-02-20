@@ -8,9 +8,9 @@ class QueueForm(FlaskForm):
     submit = SubmitField('Queue Task')
 
 class UpdateStockDataForm(FlaskForm):
-    start = DecimalField('Start Index', places=0)
-    end = DecimalField('End Index', places=0)
-    period = StringField('Period')
+    start = DecimalField('Start Index', places=0, render_kw={"placeholder": "0"})
+    end = DecimalField('End Index', places=0, render_kw={"placeholder": "4000"})
+    period = StringField('Period', render_kw={"placeholder": "1yr, 1mo, max"})
     submit = SubmitField('Update')
 
 class TrainModelForm(FlaskForm):
