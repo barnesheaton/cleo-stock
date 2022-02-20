@@ -23,6 +23,7 @@
       <thead>
         <tr>
           <th scope="col">Id</th>
+          <th scope="col">Job Id</th>
           <th scope="col">Name</th>
           <th scope="col">Description</th>
           <th scope="col">Date</th>
@@ -33,10 +34,11 @@
         {% for task in session.get_all_tasks() %}
           <tr>
             <th scope="row">{{task.id}}</th>
+            <td>{{task.job_id}}</td>
             <td>{{task.name}}</td>
-            <td>{{task.description}}</td>
             <td>{{task.date.strftime("%m/%d/%Y, %H:%M:%S") if task.date else ''}}</td>
             <td>{{task.complete}}</td>
+            <td>{{task.get_progress()}}</td>
           </tr>
         {% endfor %}
       </tbody>

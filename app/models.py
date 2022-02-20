@@ -20,6 +20,7 @@ class Predictions(db.Model):
 
 class Task(db.Model):
     id = db.Column('id', db.Integer(), primary_key=True, autoincrement=True)
+    job_id = db.Column('job_id', db.String(128), unique=True, nullable=True)
     name = db.Column(db.String(128), index=True)
     description = db.Column(db.String(128))
     date = db.Column(db.DateTime())
@@ -31,7 +32,7 @@ class Task(db.Model):
 
     def get_rq_job(self):
         try:
-            rq_job = rq.job.Job.fetch(self.id, connection=current_app.redis)
+            rq_job = rq.job.Job.fetch(self.job_id, connection=current_app.redis)
         except (redis.exceptions.RedisError, rq.exceptions.NoSuchJobError):
             return None
         return rq_job
