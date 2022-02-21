@@ -197,12 +197,13 @@ def plotVerificaitonForTicker(tickers, task_id, model_id, prediction_period, loo
 
         # Make a prediction in increments of [prediction_period] along time axis of data
         increments = math.floor((input_length - lookback_period) / prediction_period)
-        # printData('increments', increments)
-        # printData('input_length', input_length)
-        # printData('lookback_period', lookback_period)
-        # printData('observation_period', stock_model.observation_period)
-        # printData('prediction_period', prediction_period)
-        # printData('task_id', task_id)
+        printLine(f'TICKER {ticker}')
+        printData('increments', increments)
+        printData('input_length', input_length)
+        printData('lookback_period', lookback_period)
+        printData('observation_period', stock_model.observation_period)
+        printData('prediction_period', prediction_period)
+        printData('task_id', task_id)
         for index in range(0, increments):
             # printLine('Predicting along increment')
             end_index = (index * prediction_period) + lookback_period
