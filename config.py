@@ -6,6 +6,7 @@ class Config(object):
     FLASK_ENV = os.environ.get('FLASK_ENV') or 'development'
     REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'secret'
+    RQ_DASHBOARD_REDIS_URL = os.environ.get('RQ_DASHBOARD_REDIS_URL') or 'redis://'
 
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql:///app' # or 'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False

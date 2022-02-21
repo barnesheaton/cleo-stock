@@ -41,6 +41,10 @@ class Task(db.Model):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
 
+    def get_status(self):
+        job = self.get_rq_job()
+        return job.get_status() if job is not None else 'complete'
+
 class StockModel(db.Model):
     id = db.Column('id', db.Integer(), primary_key=True, autoincrement=True, unique=True)
     tickers = db.Column(db.ARRAY(db.String(128)))

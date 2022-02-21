@@ -21,3 +21,5 @@ WTForms==2.3.3
 yfinance==0.1.63
 plotly==5.5.0
 tenacity==8.0.1
+arrow==1.2.2
+rq-dashboard==0.6.1

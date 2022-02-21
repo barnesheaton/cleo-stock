@@ -6,14 +6,17 @@ from flask_bootstrap import Bootstrap
 
 # import redis
 from redis import Redis
+import rq_dashboard
 import rq
-import os
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bootstrap = Bootstrap(app)
+
+app.config.from_object(rq_dashboard.default_settings)
+app.register_blueprint(rq_dashboard.blueprint, url_prefix="/rq")
 
 from app import routes
 from app.models import Task

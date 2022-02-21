@@ -52,7 +52,7 @@ def models():
 def simulations():
     session = Session()
     simulateForm = SimulateForm()
-    simulateForm.model.choices = [(model.id, f"{model.name} - {model.date}") for model in StockModel.query.all()]
+    simulateForm.model.choices = modelList()
 
     if request.method == 'POST' and simulateForm.validate():
         session.create_and_launch_task(
@@ -70,7 +70,7 @@ def simulations():
 
 @app.route('/plots', methods=['GET', 'POST'])
 def plots():
-    (session, plotForm, displayPlotForm, graphJSON) = plotPageInit()
+    (session, plotForm, displayPlotForm, _) = plotPageInit()
 
     if request.method == 'POST' and plotForm.validate():
         task = session.create_task('plotTask')
@@ -117,9 +117,12 @@ def plotPageInit():
     graphJSON = None
 
     plotForm = PlotForm()
-    plotForm.model.choices = [(model.id, f"{model.name} - {model.date}") for model in StockModel.query.all()]
+    plotForm.model.choices = modelList()
 
     displayPlotForm = DisplayPlotForm()
     displayPlotForm.task.choices = [(task.id, f"{task.name} - {task.id}") for task in session.get_task(name='plotTask')]
 
     return session, plotForm, displayPlotForm, graphJSON
+
+def modelList():
+    return [(model.id, f"{model.name} | {model.date.strftime('%m/%d/%Y, %H:%M:%S')} | obs. period: {model.observation_period} |") for model in StockModel.query.all()]
