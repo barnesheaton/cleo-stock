@@ -29,11 +29,11 @@ class Database():
                         observations = np.row_stack((observations, df.iloc[index : index + observation_period]['close'].to_numpy()))
                         # observations.append(df.iloc[index : index + observation_period]['close'].to_numpy())
 
-                utils.printLine(ticker)
-                print('# of observations :: ', observations.shape[0])
-                print('observation_period :: ', observations.shape[1])
-                print(observations)
-                sequences.append(observations)
+                    utils.printLine(ticker)
+                    print('# of observations :: ', observations.shape[0])
+                    print('observation_period :: ', observations.shape[1])
+                    # print(observations)
+                    sequences.append(observations)
 
         print('sequences', sequences)
         return sequences
