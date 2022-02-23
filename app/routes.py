@@ -35,7 +35,6 @@ def index():
 def models():
     session = Session()
     trainModelForm = TrainModelForm()
-    trainModelForm.model_type.data = 'default'
 
     if request.method == 'POST' and trainModelForm.validate():
         session.create_and_launch_task(
