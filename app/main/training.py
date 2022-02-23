@@ -9,7 +9,7 @@ from tqdm import tqdm
 from datetime import datetime, timedelta
 from hmmlearn.hmm import GaussianHMM
 import matplotlib.dates as mdates
-# from pomegranate import HiddenMarkovModel, NormalDistribution
+from pomegranate import HiddenMarkovModel, NormalDistribution
 
 from app.main.database import Database
 from app.main.utils import printLine, printData, xor
@@ -20,9 +20,14 @@ def trainModel(dataframe, observation_period=50):
     X = getObservationsFromTickerData(dataframe, observation_period)
     # X = np.expand_dims(X, axis = 0)
     print('Number of Observations :: ', X.shape[0])
-    # model = HiddenMarkovModel.from_samples(NormalDistribution, n_components=6, X=X)
-    # model.fit(X)
     model = GaussianHMM(n_components=6, covariance_type="diag", n_iter=20)
+    model.fit(X)
+    return model
+
+def trainPomegranteModel(tickers, observation_period):
+    X = Database().getPomegranteTrainingData(tickers, observation_period)
+    # print('Number of Observations :: ', X.shape[0])
+    model = HiddenMarkovModel.from_samples(NormalDistribution, n_components=6, X=X)
     model.fit(X)
     return model
 
@@ -108,7 +113,7 @@ def simulate(
         days_prospects = []
         for ticker in simulation_tickers:
             result = getTickerAccuracyAndPredictionMetrics(
-                loaded_model,
+                stockModel,
                 ticker,
                 current_day,
                 lookback_period,
@@ -173,15 +178,15 @@ def getMaxDiffInPrediction(price, dataframe, predictionPeriod=14):
 def getTickerOutlook(model_id=3, ticker="aapl", prediction_period=14):
     dataframe = Database().getTickerData(ticker)
     stockModel = StockModel.query.get(model_id)
-    loaded_model = pickle.loads(stockModel.pickle)
-    predicitons = getPredictionsFromTickerData(loaded_model, dataframe, prediction_period=prediction_period)
+    # loaded_model = pickle.loads(stockModel.pickle)
+    predicitons = getPredictionsFromTickerData(stockModel, dataframe, prediction_period=prediction_period)
     print('predicitons', predicitons)
 
 def plotVerificaitonForTicker(tickers, task_id, model_id, prediction_period, lookback_period, limit=None):
     printLine('plotVerificaitonForTicker')
     plot_tickers = Database().getTickerTablesList(tickerString=tickers)
     stock_model = StockModel.query.get(model_id)
-    loaded_model = pickle.loads(stock_model.pickle)
+    # loaded_model = pickle.loads(stock_model.pickle)
     data_limit = int(limit) if limit else None
 
     print(plot_tickers)
@@ -210,7 +215,7 @@ def plotVerificaitonForTicker(tickers, task_id, model_id, prediction_period, loo
             input_data = dataframe.iloc[0 : end_index]
 
             prediction = getPredictionsFromTickerData(
-                loaded_model,
+                stock_model,
                 dataframe=input_data,
                 prediction_period=prediction_period,
                 observation_period=stock_model.observation_period
@@ -261,10 +266,14 @@ def getPossibleOutcomesFromObservation(observation, steps=1000, max_change_perce
 def getPredictedFeatures(model, observations, possible_outcomes):
     outcome_score = []
     isProduction = app.config['FLASK_ENV'] == 'production'
+    loaded_model = pickle.loads(model.pickle)
     for possible_outcome in tqdm(possible_outcomes, disable=isProduction):
         total_data = np.row_stack((observations, possible_outcome))
-        outcome_score.append(model.score(total_data))
-        # outcome_score.append(model.log_probability(total_data))
+        if model.model_type == 'pomegranate':
+            # print('Scoring based on [Pomegranate]')
+            outcome_score.append(loaded_model.log_probability(total_data))
+        else:
+            outcome_score.append(loaded_model.score(total_data))
 
     # print(f'Highest Prob. Outcome index: [{np.argmax(outcome_score)}]')
     return possible_outcomes[np.argmax(outcome_score)]

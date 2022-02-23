@@ -1,8 +1,11 @@
-from enum import unique
 from flask import current_app
 from app import db
 import redis
 import rq
+
+# class ModelType(db.Enum):
+#     POMEGRANATE = "pomegranate"
+#     DEFAULT = "default"
 
 class Predictions(db.Model):
     id = db.Column('id', db.Integer(), primary_key=True, autoincrement=True)
@@ -53,6 +56,8 @@ class StockModel(db.Model):
     name = db.Column(db.String(128))
     description = db.Column(db.String(128))
     date = db.Column(db.DateTime())
+    # model_type = db.Column(db.Enum(ModelType))
+    model_type = db.Column(db.Enum("pomegranate", "default", name="model_types"), default="default", nullable=False)
     models = db.relationship("Simulation")
     predictions = db.relationship("Predictions")
 

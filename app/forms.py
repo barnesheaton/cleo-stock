@@ -1,6 +1,6 @@
 from wsgiref.validate import validator
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, DecimalField, SelectField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, DecimalField, SelectField, RadioField
 from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired, ValidationError, Optional
 
@@ -19,6 +19,7 @@ class TrainModelForm(FlaskForm):
     tickers = StringField(label="Tickers", render_kw={"placeholder": "A string of tickers"})
     sample_percent = DecimalField(label='Sample Percent', validators=[Optional()], places=0, render_kw={"placeholder": "Percent of DB tickers to sample"})
     observation_period = DecimalField(label='Observation Period', places=0)
+    model_type = RadioField(label='Observation Period', choices=['pomegranate', 'default'])
     submit = SubmitField()
 
     def validate_tickers(self, field):

@@ -1,5 +1,6 @@
 import pandas as pd
 import yfinance as yf
+import numpy as np
 from app import db
 import random
 import sys
@@ -13,6 +14,29 @@ class Database():
 
     def __init__(self):
         self.connection = db.engine
+
+    def getPomegranteTrainingData(self, tickerList, observation_period=50):
+        sequences = []
+        for ticker in tickerList:
+            databaseHasTable = self.connection.dialect.has_table(self.connection, ticker.lower())
+            if databaseHasTable:
+                # build sequences
+                df = self.getTickerData(ticker.lower()).dropna()
+                observations_length = df.shape[0] - observation_period
+                if observations_length >= 2:
+                    observations = df.iloc[0:observation_period]['close'].to_numpy()
+                    for index in range(1, observations_length):
+                        observations = np.row_stack((observations, df.iloc[index : index + observation_period]['close'].to_numpy()))
+                        # observations.append(df.iloc[index : index + observation_period]['close'].to_numpy())
+
+                utils.printLine(ticker)
+                print('# of observations :: ', observations.shape[0])
+                print('observation_period :: ', observations.shape[1])
+                print(observations)
+                sequences.append(observations)
+
+        print('sequences', sequences)
+        return sequences
         
     def getTrainingData(self, tickerList):
         dataframe = pd.DataFrame()

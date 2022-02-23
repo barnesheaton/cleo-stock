@@ -35,6 +35,7 @@ def index():
 def models():
     session = Session()
     trainModelForm = TrainModelForm()
+    trainModelForm.model_type.data = 'default'
 
     if request.method == 'POST' and trainModelForm.validate():
         session.create_and_launch_task(
@@ -43,6 +44,7 @@ def models():
             model_description=trainModelForm.description.data,
             observation_period=int(trainModelForm.observation_period.data),
             sample_percent=trainModelForm.sample_percent.data,
+            model_type=trainModelForm.model_type.data,
             tickerString=trainModelForm.tickers.data
         )
 
