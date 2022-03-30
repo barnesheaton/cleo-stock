@@ -102,8 +102,9 @@ def displayPlots():
         tickers = database.getTickersInPlotTask(task_id)
         prediction_period = database.getPlotTaskPredicitonPeriod(task_id)
         fig = make_subplots(rows=len(tickers), cols=1, row_titles=tickers)
-        for index, ticker in enumerate(tickers):
+        for ticker_index, ticker in enumerate(tickers):
             printLine(ticker)
+            print(prediction_period, p_dataframe, verification_data)
             p_dataframe = database.getPlotData(task_id, ticker)
             start_date = p_dataframe.iloc[0]['date']
             verification_data = database.getTickerDataAfterDate(table=ticker, date=start_date, days='max')
@@ -135,7 +136,7 @@ def displayPlots():
                                         open=verification_data['open'],
                                         high=verification_data['high'],
                                         low=verification_data['low'],
-                                        close=verification_data['close']), index + 1, 1)
+                                        close=verification_data['close']), ticker_index + 1, 1)
 
             # fig.append_trace(go.Line(x=p_dataframe['date'], y=p_dataframe['close']), index + 1, 1)
             # fig.append_trace(go.Line(x=verification_data['date'], y=verification_data['close']), index + 1, 1)
