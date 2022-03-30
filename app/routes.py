@@ -129,7 +129,7 @@ def displayPlots():
                                 x=p_dataframe[start_index:end_index]['date'],
                                 y=p_dataframe[start_index:end_index]['close'],
                                 mode='lines'),
-                            index + 1, 1)
+                            ticker_index + 1, 1)
 
 
             fig.append_trace(go.Candlestick(x=verification_data['date'],
