@@ -104,10 +104,10 @@ def displayPlots():
         fig = make_subplots(rows=len(tickers), cols=1, row_titles=tickers)
         for ticker_index, ticker in enumerate(tickers):
             printLine(ticker)
-            print(prediction_period, p_dataframe, verification_data)
             p_dataframe = database.getPlotData(task_id, ticker)
             start_date = p_dataframe.iloc[0]['date']
             verification_data = database.getTickerDataAfterDate(table=ticker, date=start_date, days='max')
+            print(prediction_period, p_dataframe, verification_data)
 
             for si in range(0, prediction_period):
                 index_predicted_closes = verification_data[( verification_data.index + si ) % prediction_period == 0]['close']
