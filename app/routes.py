@@ -141,7 +141,7 @@ def displayPlots():
             # fig.append_trace(go.Line(x=p_dataframe['date'], y=p_dataframe['close']), index + 1, 1)
             # fig.append_trace(go.Line(x=verification_data['date'], y=verification_data['close']), index + 1, 1)
         
-        fig.update_layout(width=1000, height=len(tickers) * 200)
+        fig.update_layout(width=1000, height=len(tickers) * 400)
         fig.update_xaxes(
             rangeslider_visible=False,
             rangebreaks=[
