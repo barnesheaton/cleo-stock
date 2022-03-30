@@ -239,6 +239,7 @@ def getPredictionsFromTickerData(model, dataframe, prediction_period=10, observa
         predicted_observation = getPredictedFeatures(model, observations, possible_outcomes)
         predicted_close = predicted_observation[-1]
         prediction_df = prediction_df.append(pd.Series({
+            'sequence_index': index,
             'date': 'date',
             'open': 0,
             'high': 0,

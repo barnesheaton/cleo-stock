@@ -17,6 +17,7 @@ class Database():
 
     def getPomegranteTrainingData(self, tickerList, observation_period=50):
         sequences = []
+        print('# of sequences', len(tickerList))
         for ticker in tickerList:
             databaseHasTable = self.connection.dialect.has_table(self.connection, ticker.lower())
             if databaseHasTable:
@@ -31,11 +32,11 @@ class Database():
 
                     utils.printLine(ticker)
                     print('# of observations :: ', observations.shape[0])
-                    print('observation_period :: ', observations.shape[1])
+                    print('observation period :: ', observations.shape[1])
                     # print(observations)
                     sequences.append(observations)
 
-        print('sequences', sequences)
+        # print('sequences', sequences)
         return sequences
         
     def getTrainingData(self, tickerList):
@@ -206,3 +207,18 @@ class Database():
         dataframe = pd.read_sql(sql=sql, con=self.connection)
         tickers = dataframe['ticker'].to_list()
         return tickers
+
+    def getPlotTaskPredicitonPeriod(self, plot_task_id):
+        sql = f"""SELECT
+                    MAX(predictions.sequence_index)
+                FROM
+                    predictions
+                WHERE
+                    predictions.task_id = {plot_task_id}
+        """
+        dataframe = pd.read_sql(sql=sql, con=self.connection)
+        prediction_period = dataframe['max'].to_list()
+
+        return prediction_period[0] + 1
+
+    

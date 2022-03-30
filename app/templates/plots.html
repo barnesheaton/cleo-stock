@@ -34,9 +34,17 @@
       </div>
     </form>
 
-    <div id='chart' class='chart' ”="”"></div>
+     <div>
+      {% for acc in tickerAccuracies %}
+          <div>
+            {{ acc }}
+          </div>
+        {% endfor %}
+    </div>
+
 
   </div>
+  <div id='chart' class='chart' ”="”"></div>
   <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
   <script type='text/javascript'>
     var graphs = {{ graphJSON | safe }};

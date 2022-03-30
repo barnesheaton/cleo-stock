@@ -2,9 +2,11 @@ import os
 import json
 from app import app
 from flask import render_template
+import math
 
 from app.forms import DisplayPlotForm, PlotForm, UpdateStockDataForm, TrainModelForm, SimulateForm
 from app.main.database import Database
+from app.main.utils import printLine
 from app.session import Session
 from app.models import StockModel
 
@@ -14,6 +16,8 @@ import plotly
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+
+import numpy as np
 
 models_dir = os.path.join(app.instance_path, 'models')
 os.makedirs('uploads', exist_ok=True)
@@ -90,28 +94,62 @@ def plots():
 @app.route('/plots/display', methods=['GET', 'POST'])
 def displayPlots():
     (session, plotForm, displayPlotForm, graphJSON) = plotPageInit()
+    tickerAccuracies = []
 
     if request.method == 'POST' and displayPlotForm.validate():
         database = Database()
         task_id = int(displayPlotForm.task.data)
         tickers = database.getTickersInPlotTask(task_id)
-
+        prediction_period = database.getPlotTaskPredicitonPeriod(task_id)
         fig = make_subplots(rows=len(tickers), cols=1, row_titles=tickers)
         for index, ticker in enumerate(tickers):
+            printLine(ticker)
             p_dataframe = database.getPlotData(task_id, ticker)
             start_date = p_dataframe.iloc[0]['date']
             verification_data = database.getTickerDataAfterDate(table=ticker, date=start_date, days='max')
-            # fig.append_trace(go.Ohlc(x=verification_data['date'],
-            #                             open=verification_data['open'],
-            #                             high=verification_data['high'],
-            #                             low=verification_data['low'],
-            #                             close=verification_data['close']), index + 1, 1)
-            fig.append_trace(go.Line(x=verification_data['date'], y=verification_data['close']), index + 1, 1)
-            fig.append_trace(go.Line(x=p_dataframe['date'], y=p_dataframe['close']), index + 1, 1)
 
+            for si in range(0, prediction_period):
+                index_predicted_closes = verification_data[( verification_data.index + si ) % prediction_period == 0]['close']
+                index_verified_closes = p_dataframe[( verification_data.index + si ) % prediction_period == 0]['close']
+                index_percentages = np.abs((index_predicted_closes - index_verified_closes) / index_verified_closes)
+                index_accuracy = np.mean(np.abs(index_percentages))
+                tickerAccuracies.append((ticker, si, index_accuracy))
+
+            closePercentages = np.abs((p_dataframe['close'] - verification_data['close']) / verification_data['close'])
+            accuracy = np.mean(np.abs(closePercentages))
+            tickerAccuracies.append((ticker, 'total', accuracy))
+
+            increments = math.floor(p_dataframe.shape[0] / prediction_period)   
+            for inc in range(0, increments):
+                start_index = inc * prediction_period
+                end_index = (inc * prediction_period) + prediction_period
+
+                fig.append_trace(go.Scatter(
+                                x=p_dataframe[start_index:end_index]['date'],
+                                y=p_dataframe[start_index:end_index]['close'],
+                                mode='lines'),
+                            index + 1, 1)
+
+
+            fig.append_trace(go.Candlestick(x=verification_data['date'],
+                                        open=verification_data['open'],
+                                        high=verification_data['high'],
+                                        low=verification_data['low'],
+                                        close=verification_data['close']), index + 1, 1)
+
+            # fig.append_trace(go.Line(x=p_dataframe['date'], y=p_dataframe['close']), index + 1, 1)
+            # fig.append_trace(go.Line(x=verification_data['date'], y=verification_data['close']), index + 1, 1)
+        
+        fig.update_layout(width=1000, height=len(tickers) * 200)
+        fig.update_xaxes(
+            rangeslider_visible=False,
+            rangebreaks=[
+                dict(bounds=["sat", "mon"])  # hide weekends, eg. hide sat to before mon
+            ]
+        )
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
-    return render_template('plots.html', title='Plots', plotForm=plotForm, displayPlotForm=displayPlotForm, session=session, graphJSON=graphJSON)
+    return render_template('plots.html', title='Plots', plotForm=plotForm, displayPlotForm=displayPlotForm, session=session, graphJSON=graphJSON, tickerAccuracies=tickerAccuracies)
 
 def plotPageInit():
     session = Session()
