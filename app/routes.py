@@ -106,7 +106,7 @@ def displayPlots():
             printLine(ticker)
             p_dataframe = database.getPlotData(task_id, ticker)
             start_date = p_dataframe.iloc[0]['date']
-            verification_data = database.getTickerDataAfterDate(table=ticker, date=start_date, days='max')
+            verification_data = database.getTickerDataAfterDate(table=ticker, date=start_date, days=p_dataframe.shape[0])
             print(prediction_period, p_dataframe, verification_data)
 
             for si in range(0, prediction_period):
