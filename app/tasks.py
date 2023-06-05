@@ -4,8 +4,8 @@ from random import sample
 from rq import get_current_job
 
 from app.main.database import Database
-from app.main.training import trainModel, trainPomegranteModel
-from app.main.training import simulate, plotVerificaitonForTicker
+from app.main.training import trainModel, trainPomegranteModel, trainCategoryModel
+from app.main.training import simulate, plotVerificaitonForTicker, getBinaryPredictions
 
 from app.models import StockModel
 from app import db
@@ -21,6 +21,9 @@ def simulateTask(*args, **kwargs):
 def plotTask(*args, **kwargs):
     plotVerificaitonForTicker(*args, **kwargs)
 
+def binaryPredictionTask(*args, **kwargs):
+    getBinaryPredictions(*args, **kwargs)
+
 def trainModelTask(model_name, observation_period, model_type, tickerString=None, sample_percent=None, model_description=None):
     if sample_percent:
         tickers = Database().getTickerTablesList(sample_percent=sample_percent)
@@ -34,6 +37,9 @@ def trainModelTask(model_name, observation_period, model_type, tickerString=None
     if model_type == 'pomegranate':
         print("POMEGRANATE")
         model = trainPomegranteModel(tickers, observation_period)
+    elif model_type == 'pom-binary':
+        print("POMEGRANATE BINARY")
+        model = trainCategoryModel(tickers, observation_period)
     else:
         print("DEFAULT")
         dataframe = Database().getTrainingData(tickers)

@@ -24,6 +24,13 @@ def trainModel(dataframe, observation_period=50):
     model.fit(X)
     return model
 
+def trainCategoryModel(tickers, observation_period=50):
+    X = Database().getPomegranteTrainingDataCategoryMethod(tickers, observation_period)
+    # print('Number of Observations :: ', X.shape[0])
+    model = HiddenMarkovModel.from_samples(NormalDistribution, n_components=6, X=X)
+    model.fit(X)
+    return model
+
 def trainPomegranteModel(tickers, observation_period):
     X = Database().getPomegranteTrainingData(tickers, observation_period)
     # print('Number of Observations :: ', X.shape[0])
@@ -182,6 +189,51 @@ def getTickerOutlook(model_id=3, ticker="aapl", prediction_period=14):
     predicitons = getPredictionsFromTickerData(stockModel, dataframe, prediction_period=prediction_period)
     print('predicitons', predicitons)
 
+def getBinaryPredictions(tickers, task_id, model_id, prediction_period, lookback_period, limit=None):
+    printLine('getBinaryPredictions')
+    plot_tickers = Database().getTickerTablesList(tickerString=tickers)
+    stock_model = StockModel.query.get(model_id)
+    # loaded_model = pickle.loads(stock_model.pickle)
+    data_limit = int(limit) if limit else None
+
+    print(plot_tickers)
+
+    for ticker in plot_tickers:
+        dataframe = Database().getTickerData(ticker, limit=data_limit)
+        input_length = dataframe.shape[0]
+
+        # Must be able to construct at least one sequence of observations
+        # TODO move as much input verifcation to forms as possible
+        if lookback_period < stock_model.observation_period + 1 or input_length < lookback_period:
+            return
+
+        # Make a prediction in increments of [prediction_period] along time axis of data
+        increments = math.floor((input_length - lookback_period) / prediction_period)
+        printLine(f'TICKER {ticker}')
+        printData('increments', increments)
+        printData('input_length', input_length)
+        printData('lookback_period', lookback_period)
+        printData('observation_period', stock_model.observation_period)
+        printData('prediction_period', prediction_period)
+        printData('task_id', task_id)
+        for index in range(0, increments):
+            # printLine('Predicting along increment')
+            end_index = (index * prediction_period) + lookback_period
+            input_data = dataframe.iloc[0 : end_index]
+
+            prediction = getBinaryPredictionsFromTickerData(
+                stock_model,
+                dataframe=input_data,
+                prediction_period=prediction_period,
+                observation_period=stock_model.observation_period
+            )
+            # Set columns on predictions
+            prediction['date'] = dataframe.iloc[0 : end_index + prediction_period ]['date'].to_numpy()
+            prediction['ticker'] = ticker
+            prediction['model_id'] = model_id
+            prediction['task_id'] = task_id
+            Database().savePredictions(prediction.iloc[-prediction_period:])
+
 def plotVerificaitonForTicker(tickers, task_id, model_id, prediction_period, lookback_period, limit=None):
     printLine('plotVerificaitonForTicker')
     plot_tickers = Database().getTickerTablesList(tickerString=tickers)
@@ -251,6 +303,42 @@ def getPredictionsFromTickerData(model, dataframe, prediction_period=10, observa
 
     return prediction_df
 
+def getPossibleBinaryOutcomes(observation, averageClosePrice, steps=1000, max_change_percent=0.05):
+    possible_outcomes =[]
+    maxChange = np.max(observation)
+    minChange = np.min(observation)
+
+    # frac_change_range = np.linspace(minChange - (averageClosePrice * max_change_percent), maxChange + (averageClosePrice * max_change_percent), steps)
+    frac_change_range = np.linspace(minChange, maxChange, steps)
+    isProduction = app.config['FLASK_ENV'] == 'production'
+    for change in tqdm(frac_change_range, disable=isProduction):
+        new_po = np.append(observation[1:], change)
+        possible_outcomes.append(new_po)
+
+    return np.array(possible_outcomes)
+
+def getBinaryPredictionsFromTickerData(model, dataframe, prediction_period=10, observation_period=50):
+    prediction_df = dataframe
+    averageClosePrice = np.mean(dataframe['close'].to_numpy())
+    for index in range(0, prediction_period):
+        observations = getBinaryObservationsFromTickerData(prediction_df, observation_period=observation_period)
+        possible_outcomes = getPossibleBinaryOutcomes(observations[-1], averageClosePrice, steps=4000, max_change_percent=0.01)
+
+        predicted_observation = getPredictedFeatures(model, observations, possible_outcomes)
+        predicted_change = predicted_observation[-1]
+        prediction_df = prediction_df.append(pd.Series({
+            'sequence_index': index,
+            'date': 'date',
+            'open': 0,
+            'high': 0,
+            'low': 0,
+            'close': 0,
+            'adj_close': 0,
+            'volume': predicted_change,
+        }), ignore_index=True)
+
+    return prediction_df
+
 def getPossibleOutcomesFromObservation(observation, steps=1000, max_change_percent=0.03):
     # mean = np.mean(observation)
     start = observation[-1]
@@ -270,7 +358,7 @@ def getPredictedFeatures(model, observations, possible_outcomes):
     loaded_model = pickle.loads(model.pickle)
     for possible_outcome in tqdm(possible_outcomes, disable=isProduction):
         total_data = np.row_stack((observations, possible_outcome))
-        if model.model_type == 'pomegranate':
+        if model.model_type == 'pomegranate' or model.model_type == 'pom-binary':
             # print('Scoring based on [Pomegranate]')
             outcome_score.append(loaded_model.log_probability(total_data))
         else:
@@ -286,6 +374,16 @@ def getObservationsFromTickerData(dataframe, observation_period):
     isProduction = app.config['FLASK_ENV'] == 'production'
     for index in tqdm(range(0, observations_length), disable=isProduction):
         observations.append(dataframe.iloc[index : index + observation_period]['close'].to_numpy())
+
+    return np.array(observations)
+
+def getBinaryObservationsFromTickerData(dataframe, observation_period):
+    observations = []
+    observations_length = dataframe.shape[0] - observation_period
+    # Input 1st observation into features array so numpy can properly concatenate
+    isProduction = app.config['FLASK_ENV'] == 'production'
+    for index in tqdm(range(0, observations_length), disable=isProduction):
+        observations.append(dataframe.iloc[index : index + observation_period]['close'].to_numpy() - dataframe.iloc[index : index + observation_period]['open'].to_numpy())
 
     return np.array(observations)
 

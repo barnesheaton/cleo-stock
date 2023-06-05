@@ -73,6 +73,70 @@ def simulations():
 
     return render_template('simulations.html', title='Simulate', simulateForm=simulateForm, session=session)
 
+@app.route('/binary', methods=['GET', 'POST'])
+def binary():
+    (session, binaryForm, displayBinaryForm, _) = plotPageInit(taskName='binaryPredictionTask')
+
+    if request.method == 'POST' and binaryForm.validate():
+        task = session.create_task('binaryPredictionTask')
+        session.launch_task(
+            task=task,
+            tickers=binaryForm.tickers.data,
+            task_id = task.id,
+            model_id=int(binaryForm.model.data),
+            lookback_period=int(binaryForm.lookback.data),
+            prediction_period=int(binaryForm.lookahead.data),
+            limit=binaryForm.limit.data
+        )
+
+    return render_template('binary.html', title='Plots', binaryForm=binaryForm, displayBinaryForm=displayBinaryForm, session=session)
+
+@app.route('/binary/display', methods=['GET', 'POST'])
+def displayBinary():
+    (session, binaryForm, displayBinaryForm, graphJSON) = plotPageInit(taskName='binaryPredictionTask')
+
+    if request.method == 'POST' and displayBinaryForm.validate():
+        database = Database()
+        task_id = int(displayBinaryForm.task.data)
+        tickers = database.getTickersInPlotTask(task_id)
+        # prediction_period = database.getPlotTaskPredicitonPeriod(task_id)
+        fig = make_subplots(rows=len(tickers), cols=1, row_titles=tickers)
+        for ticker_index, ticker in enumerate(tickers):
+            printLine(ticker)
+            p_dataframe = database.getPlotData(task_id, ticker)
+            start_date = p_dataframe.iloc[0]['date']
+            verification_data = database.getTickerDataAfterDate(table=ticker, date=start_date, days=p_dataframe.shape[0])
+
+            # highestPrice = np.max(verification_data['high'].to_numpy)
+            
+            # for prediction in p_dataframe['volume'].to_numpy():
+            #     fig.append_trace(go.Bar, ticker_index + 1, 1)
+
+
+            fig.append_trace(go.Candlestick(x=verification_data['date'],
+                                        open=verification_data['open'],
+                                        high=verification_data['high'],
+                                        low=verification_data['low'],
+                                        close=verification_data['close']
+                                        ), ticker_index + 1, 1)
+            
+            fig.append_trace(go.Scatter(x=verification_data['date'], y=verification_data['close'], error_y=dict(
+                                            type='data',
+                                            symmetric=False,
+                                            array=p_dataframe['volume'].to_numpy())
+                                        ), ticker_index + 1, 1)
+        
+        fig.update_layout(width=1000, height=len(tickers) * 400)
+        fig.update_xaxes(
+            rangeslider_visible=False,
+            rangebreaks=[
+                dict(bounds=["sat", "mon"])  # hide weekends, eg. hide sat to before mon
+            ]
+        )
+        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
+    return render_template('binary.html', title='Plots', binaryForm=binaryForm, displayBinaryForm=displayBinaryForm, session=session, graphJSON=graphJSON)
+
 @app.route('/plots', methods=['GET', 'POST'])
 def plots():
     (session, plotForm, displayPlotForm, _) = plotPageInit()
@@ -152,7 +216,7 @@ def displayPlots():
 
     return render_template('plots.html', title='Plots', plotForm=plotForm, displayPlotForm=displayPlotForm, session=session, graphJSON=graphJSON, tickerAccuracies=tickerAccuracies)
 
-def plotPageInit():
+def plotPageInit(taskName='plotTask'):
     session = Session()
     graphJSON = None
 
@@ -160,7 +224,7 @@ def plotPageInit():
     plotForm.model.choices = modelList()
 
     displayPlotForm = DisplayPlotForm()
-    displayPlotForm.task.choices = [(task.id, f"{task.name} - {task.id}") for task in session.get_task(name='plotTask')]
+    displayPlotForm.task.choices = [(task.id, f"{task.name} - {task.id}") for task in session.get_task(name=taskName)]
 
     return session, plotForm, displayPlotForm, graphJSON
 

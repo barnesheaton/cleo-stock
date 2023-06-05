@@ -38,6 +38,32 @@ class Database():
 
         # print('sequences', sequences)
         return sequences
+
+    def getPomegranteTrainingDataCategoryMethod(self, tickerList, observation_period=50):
+        sequences = []
+        print('# of sequences', len(tickerList))
+        for ticker in tickerList:
+            databaseHasTable = self.connection.dialect.has_table(self.connection, ticker.lower())
+            if databaseHasTable:
+                # build sequences
+                df = self.getTickerData(ticker.lower()).dropna()
+                observations_length = df.shape[0] - observation_period
+                if observations_length >= 2:
+                    # manually add 1st observation so numpy knows shape to stack rows by
+                    # This feature is the differince between a days close and open, negative means a red day, positve means a green day
+                    observations = df.iloc[0:observation_period]['close'].to_numpy() - df.iloc[0:observation_period]['open'].to_numpy()
+                    # print('1st observation', observations, df.iloc[0:observation_period]['close'].to_numpy(), df.iloc[0:observation_period]['open'].to_numpy())
+                    for index in range(1, observations_length):
+                        observations = np.row_stack((observations, df.iloc[index : index + observation_period]['close'].to_numpy() - df.iloc[index : index + observation_period]['open'].to_numpy()))
+
+                    utils.printLine(ticker)
+                    print('# of observations :: ', observations.shape[0])
+                    print('observation period :: ', observations.shape[1])
+                    # print(observations)
+                    sequences.append(observations)
+
+        # print('sequences', sequences)
+        return sequences
         
     def getTrainingData(self, tickerList):
         dataframe = pd.DataFrame()
@@ -57,11 +83,13 @@ class Database():
         yf_df = yf.download(tickers=ticker_string, period=period, group_by="ticker")
 
         for ticker in ticker_list:
+            print('Updtaing Ticker Data', ticker.lower())
             df = yf_df.dropna() if (len(ticker_list) == 1) else yf_df[ticker].dropna()
             if df.shape[0] <= 10:
                 continue
 
             if not self.connection.dialect.has_table(self.connection, ticker.lower()):
+                print('Creating Table', ticker.lower())
                 self.createTickerTable(ticker.lower())
 
             self.updateTickerTable(ticker.lower(), df)

@@ -57,7 +57,7 @@ class StockModel(db.Model):
     description = db.Column(db.String(128))
     date = db.Column(db.DateTime())
     # model_type = db.Column(db.Enum(ModelType))
-    model_type = db.Column(db.Enum("pomegranate", "default", name="model_types"), default="default", nullable=False)
+    model_type = db.Column(db.Enum("pomegranate", "default", "pom-binary", name="model_types"), default="default", nullable=False)
     models = db.relationship("Simulation")
     predictions = db.relationship("Predictions")
 
