@@ -87,8 +87,9 @@ class Database():
         for ticker in ticker_list:
             print('------- Updtaing Ticker Data', ticker.lower(), ' -------')
             df = yf_df.dropna() if (len(ticker_list) == 1) else yf_df[ticker].dropna()
-            print(df.head(2))
+            print(df.head(4))
             if df.shape[0] <= 10:
+                print("DF not large enough")
                 continue
 
             if not self.connection.dialect.has_table(self.connection, ticker.lower()):
