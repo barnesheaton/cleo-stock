@@ -78,13 +78,16 @@ class Database():
         return dataframe
 
     def updateTickerTables(self, period, start=0, end=100):
+        # print("updateTickerTables")
         ticker_list = utils.getTickerList(start=start, end=end)
         ticker_string = utils.getTickerString(start=start, end=end)
         yf_df = yf.download(tickers=ticker_string, period=period, group_by="ticker")
+        print(self.connection)
 
         for ticker in ticker_list:
-            print('Updtaing Ticker Data', ticker.lower())
+            print('------- Updtaing Ticker Data', ticker.lower(), ' -------')
             df = yf_df.dropna() if (len(ticker_list) == 1) else yf_df[ticker].dropna()
+            print(df.head(2))
             if df.shape[0] <= 10:
                 continue
 

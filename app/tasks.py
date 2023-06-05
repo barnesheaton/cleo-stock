@@ -13,6 +13,7 @@ from app import db
 from wtforms.validators import ValidationError
 
 def updateTickerTablesTask(*args, **kwargs):
+    print("updateTickerTablesTask")
     Database().updateTickerTables(*args, **kwargs)
     
 def simulateTask(*args, **kwargs):
