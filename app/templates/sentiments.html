@@ -4,22 +4,22 @@
   <div class="container" id="plots">
     {% from "_formhelpers.html" import render_field %}
 
-    <form action="{{ url_for('plots') }}" method="post" novalidate="novalidate" class="form">
-      {{ plotForm.csrf_token }}
-      {{ plotForm.hidden_tag() }}
+    <form action="{{ url_for('sentimentsPlot') }}" method="post" novalidate="novalidate" class="form">
+      {{ sentimentsPlotForm.csrf_token }}
+      {{ sentimentsPlotForm.hidden_tag() }}
       <div class="row">
-        {% for field in plotForm %}
+        {% for field in sentimentsPlotForm %}
           <div class="form-group">
             {{ render_field(field) }}
           </div>
         {% endfor %}
       </div>
       <div class="form-group">
-        {{ plotForm.submit(class="btn btn-primary")}}
+        {{ sentimentsPlotForm.submit(class="btn btn-primary")}}
       </div>
     </form>
 
-    <form action="{{ url_for('displayPlots') }}" method="post" novalidate="novalidate" class="form">
+    {# <form action="{{ url_for('displayPlots') }}" method="post" novalidate="novalidate" class="form">
       {{ displayPlotForm.csrf_token }}
       {{ displayPlotForm.hidden_tag() }}
       <div class="row">
@@ -34,13 +34,13 @@
       </div>
     </form>
 
-    <div>
+     <div>
       {% for acc in tickerAccuracies %}
-        <div>
-          {{ acc }}
-        </div>
-      {% endfor %}
-    </div>
+          <div>
+            {{ acc }}
+          </div>
+        {% endfor %}
+    </div> #}
 
   </div>
   <div id='chart' class='chart' ”="”"></div>

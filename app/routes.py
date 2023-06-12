@@ -4,7 +4,7 @@ from app import app
 from flask import render_template
 import math
 
-from app.forms import DisplayPlotForm, PlotForm, UpdateSentimentsForm, UpdateStockDataForm, TrainModelForm, SimulateForm, UpdateArticlesForm
+from app.forms import DisplayPlotForm, PlotForm, SentimentsPlotForm, UpdateSentimentsForm, UpdateStockDataForm, TrainModelForm, SimulateForm, UpdateArticlesForm
 from app.main.database import Database
 from app.main.utils import printLine
 from app.session import Session
@@ -94,6 +94,33 @@ def simulations():
         )
 
     return render_template('simulations.html', title='Simulate', simulateForm=simulateForm, session=session)
+
+@app.route('/sentiments', methods=['GET', 'POST'])
+def sentimentsPlot():
+    session = Session()
+    graphJSON = None
+    sentimentsPlotForm = SentimentsPlotForm()
+
+    if request.method == 'POST' and sentimentsPlotForm.validate():
+        fig = make_subplots(rows=1, cols=1)
+        database = Database()
+        sentiments_data = database.getSentimentsOverDates(sentimentsPlotForm.start_date.data, sentimentsPlotForm.end_date.data)
+
+        fig.append_trace(go.Scatter(
+                                x=sentiments_data['date'],
+                                y=sentiments_data['pos'],
+                                mode='lines', marker=dict(color='blue')),1, 1)
+        
+        fig.update_layout(width=1000, height=400)
+        fig.update_xaxes(
+            rangeslider_visible=False,
+            # rangebreaks=[
+            #     dict(bounds=["sat", "mon"])  # hide weekends, eg. hide sat to before mon
+            # ]
+        )
+        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
+    return render_template('sentiments.html', title='Plots', sentimentsPlotForm=sentimentsPlotForm, session=session, graphJSON=graphJSON)
 
 @app.route('/binary', methods=['GET', 'POST'])
 def binary():

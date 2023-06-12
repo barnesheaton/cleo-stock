@@ -217,7 +217,20 @@ class Database():
         else:
             return pd.read_sql_table(table, self.connection)
 
-    
+    def getSentimentsOverDates(self, start, end):
+        sql = f"""SELECT
+                    date(articles."datePublished"), avg(pos) as pos, avg(neg) as neg, avg(mid) as mid
+                FROM
+                    articles
+                WHERE
+                    articles."datePublished" >= '{start.strftime('%Y-%m-%d')}' and articles.datePublished <= '{end.strftime('%Y-%m-%d')}'
+                GROUP BY
+                    date(articles."datePublished")
+                ORDER BY
+                    date(articles."datePublished")
+        """
+        dataframe = pd.read_sql(sql=sql, con=self.connection)
+        return dataframe
 
     def getTickerDataToDate(self, table, date, days):
         if (days == 0 or days == 'max'):
