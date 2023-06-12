@@ -193,7 +193,7 @@ class Database():
                 SET
                     pos = {pos}, neg = {neg}, mid = {mid}
                 WHERE
-                    id = {articleId}
+                    id = '{articleId}'
         """
 
         db.engine.execute(text(sql)).execution_options(autocommit=True)
