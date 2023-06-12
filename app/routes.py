@@ -4,7 +4,7 @@ from app import app
 from flask import render_template
 import math
 
-from app.forms import DisplayPlotForm, PlotForm, UpdateStockDataForm, TrainModelForm, SimulateForm, UpdateArticlesForm
+from app.forms import DisplayPlotForm, PlotForm, UpdateSentimentsForm, UpdateStockDataForm, TrainModelForm, SimulateForm, UpdateArticlesForm
 from app.main.database import Database
 from app.main.utils import printLine
 from app.session import Session
@@ -39,11 +39,23 @@ def index():
 def articles():
     session = Session()
     articlesForm = UpdateArticlesForm()
+    sentimentsForm = UpdateSentimentsForm()
 
     if articlesForm.is_submitted():
         session.create_and_launch_task('updateArticlesTask', start=articlesForm.start_date.data, end=articlesForm.end_date.data)
 
-    return render_template('articles.html', title='Articles', articlesForm=articlesForm, session=session)
+    return render_template('articles.html', title='Articles', articlesForm=articlesForm, sentimentsForm=sentimentsForm, session=session)
+
+@app.route('/articles/sentiments', methods=['GET', 'POST'])
+def sentiments():
+    session = Session()
+    articlesForm = UpdateArticlesForm()
+    sentimentsForm = UpdateSentimentsForm()
+
+    if sentimentsForm.is_submitted():
+        session.create_and_launch_task('updateSentimentsTask')
+
+    return render_template('articles.html', title='Articles', articlesForm=articlesForm, sentimentsForm=sentimentsForm, session=session)
 
 @app.route('/models', methods=['GET', 'POST'])
 def models():

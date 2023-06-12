@@ -15,6 +15,9 @@ from wtforms.validators import ValidationError
 def updateArticlesTask(*args, **kwargs):
     Database().updateArticlesTable(*args, **kwargs)
 
+def updateSentimentsTask(*args, **kwargs):
+    Database().updateSentimentsTable(*args, **kwargs)
+
 def updateTickerTablesTask(*args, **kwargs):
     Database().updateTickerTables(*args, **kwargs)
     

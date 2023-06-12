@@ -3,7 +3,7 @@
 {% block app_content %}
   <div class="container" id="simulation">
     {% from "_formhelpers.html" import render_field %}
-    <form method="post" novalidate="novalidate" class="form">
+    <form action="{{ url_for('articles') }}" method="post" novalidate="novalidate" class="form">
       {{ articlesForm.csrf_token }}
       {{ articlesForm.hidden_tag() }}
       <div class="row">
@@ -15,6 +15,21 @@
       </div>
       <div class="form-group">
         {{ articlesForm.submit(class="btn btn-primary")}}
+      </div>
+    </form>
+
+    <form action="{{ url_for('sentiments') }}" method="post" novalidate="novalidate" class="form">
+      {{ sentimentsForm.csrf_token }}
+      {{ sentimentsForm.hidden_tag() }}
+      <div class="row">
+        {% for field in sentimentsForm %}
+          <div class="form-group">
+            {{ render_field(field) }}
+          </div>
+        {% endfor %}
+      </div>
+      <div class="form-group">
+        {{ sentimentsForm.submit(class="btn btn-primary")}}
       </div>
     </form>
   </div>

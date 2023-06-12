@@ -3,21 +3,30 @@ import yfinance as yf
 import numpy as np
 from datetime import datetime, timedelta
 import requests
+import re
 
 from app import db
 import random
 import sys
 import app.main.utils as utils
 from app.models import StockModel
-from sqlalchemy import Table, MetaData
+from sqlalchemy import Table, MetaData, text
 
 
 class Database():
     connection = db.engine
+
     articleURL = "https://contextualwebsearch-websearch-v1.p.rapidapi.com/api/search/NewsSearchAPI"
     articlesHeaders = {
         "X-RapidAPI-Key": "93f54a6459msh59bc8a47596a61ep101d1bjsn5faeb09bd872",
         "X-RapidAPI-Host": "contextualwebsearch-websearch-v1.p.rapidapi.com"
+    }
+
+    sentimentURL = "https://text-sentiment.p.rapidapi.com/analyze"
+    textHeaders = {
+        "content-type": "application/x-www-form-urlencoded",
+        "X-RapidAPI-Key": "93f54a6459msh59bc8a47596a61ep101d1bjsn5faeb09bd872",
+        "X-RapidAPI-Host": "text-sentiment.p.rapidapi.com"
     }
 
     def __init__(self):
@@ -85,22 +94,32 @@ class Database():
 
         return dataframe
     
+    def updateSentimentsTable(self):
+        df = pd.read_sql_table('articles', self.connection)
+        # scores = []
+        for index, row in df.iterrows():
+            textParam = row['title'] + row['description'] + row['body']
+            sanitizedText =re.sub("[@#%$*&87]", "", textParam, 0, re.IGNORECASE)
+            # print(f"Getting Sentiment scores for {sanitizedText}")
+            textResponse = requests.post(self.sentimentURL, data={"text": sanitizedText}, headers=self.textHeaders)
+            textSentiment = textResponse.json()
+
+            self.updateArticleSentiment(row['id'], textSentiment["pos_percent"], textSentiment["neg_percent"], textSentiment["mid_percent"])
+            # scores.append([row['datePublished'], textSentiment["pos_percent"], textSentiment["neg_percent"], textSentiment["mid_percent"]])
+
+        # scoresDf = pd.DataFrame(scores, columns=['date', 'pos', 'neg', 'mid'])
+        # scoresDf.to_sql('sentiments', con=self.connection, if_exists='append', index=False)
+
     def updateArticlesTable(self, start=datetime.today(), end=datetime.today()):
         query = {"q":"nyse and stock market","pageNumber":"1","pageSize":"50","autoCorrect":"true","withThumbnails":"false","fromPublishedDate": f"{start}","toPublishedDate":f"{end}"}
         response = requests.get(self.articleURL, headers=self.articlesHeaders, params=query)
         articles = response.json()
         if (articles and articles['value']):
             df = pd.DataFrame(articles['value'], columns=['id', 'title', 'description', 'body', 'datePublished'])
+            df['pos'] = 0.0
+            df['neg'] = 0.0
+            df['mid'] = 0.0
             df.to_sql('articles', con=self.connection, if_exists='append', index=False)
-            # df.to_csv(outputDir / outputFile, sep="|", mode='a', index=False, header=False)
-
-    def updateSentimentsTable(self, start=datetime.today(), end=datetime.today()):
-        query = {"q":"nyse and stock market","pageNumber":"1","pageSize":"50","autoCorrect":"true","withThumbnails":"false","fromPublishedDate": f"{start}","toPublishedDate":f"{end}"}
-        response = requests.get(self.articleURL, headers=self.articlesHeaders, params=query)
-        articles = response.json()
-        if (articles and articles['value']):
-            df = pd.DataFrame(articles['value'], columns=['date', 'pos', 'neg', 'med'])
-            df.to_sql('sentiments', con=self.connection, if_exists='append', index=False)
             # df.to_csv(outputDir / outputFile, sep="|", mode='a', index=False, header=False)
 
     def updateTickerTables(self, period, start=0, end=100):
@@ -167,6 +186,17 @@ class Database():
             return utils.intersection(tickers, tickerString.replace(" ", "").strip(",").split(","))
 
         return tickerTables
+
+    def updateArticleSentiment(self, articleId, pos, neg, mid):
+        sql = f"""UPDATE
+                    articles
+                SET
+                    pos = {pos}, neg = {neg}, mid = {mid}
+                WHERE
+                    id = {articleId}
+        """
+
+        db.engine.execute(text(sql)).execution_options(autocommit=True)
 
     def getTickerData(self, table, limit=None):
         if limit:

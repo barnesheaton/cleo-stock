@@ -18,6 +18,11 @@ class UpdateArticlesForm(FlaskForm):
     end_date = DateField(validators=[DataRequired()])
     submit = SubmitField('Update Articles')
 
+class UpdateSentimentsForm(FlaskForm):
+    # start_date = DateField(validators=[DataRequired()])
+    # end_date = DateField(validators=[DataRequired()])
+    submit = SubmitField('Update Sentiments')
+
 class TrainModelForm(FlaskForm):
     name = StringField(label='Name', validators=[DataRequired()])
     description = StringField(label='Description', render_kw={"placeholder": "A description of the model"})
