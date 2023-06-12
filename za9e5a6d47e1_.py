@@ -24,7 +24,7 @@ def upgrade():
     sa.Column('title', sa.String(length=128), nullable=False),
     sa.Column('description', sa.String(length=128), nullable=False),
     sa.Column('body', sa.String(length=128), nullable=False),
-    sa.Column('datePublished', sa.Date(length=128), nullable=False),
+    sa.Column('datePublished', sa.Date(), nullable=False),
     sa.PrimaryKeyConstraint('article_id')
     )
 
