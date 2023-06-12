@@ -196,7 +196,7 @@ class Database():
                     id = '{articleId}'
         """
 
-        db.engine.execute(text(sql)).execution_options(autocommit=True)
+        db.engine.execute(text(sql))
 
     def getTickerData(self, table, limit=None):
         if limit:
