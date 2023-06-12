@@ -13,6 +13,11 @@ class UpdateStockDataForm(FlaskForm):
     period = StringField('Period', render_kw={"placeholder": "1yr, 1mo, max"})
     submit = SubmitField('Update')
 
+class UpdateArticlesForm(FlaskForm):
+    start_date = DateField(validators=[DataRequired()])
+    end_date = DateField(validators=[DataRequired()])
+    submit = SubmitField('Update Articles')
+
 class TrainModelForm(FlaskForm):
     name = StringField(label='Name', validators=[DataRequired()])
     description = StringField(label='Description', render_kw={"placeholder": "A description of the model"})

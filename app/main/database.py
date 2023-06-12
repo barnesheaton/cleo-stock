@@ -1,6 +1,9 @@
 import pandas as pd
 import yfinance as yf
 import numpy as np
+from datetime import datetime, timedelta
+import requests
+
 from app import db
 import random
 import sys
@@ -11,6 +14,11 @@ from sqlalchemy import Table, MetaData
 
 class Database():
     connection = db.engine
+    articleURL = "https://contextualwebsearch-websearch-v1.p.rapidapi.com/api/search/NewsSearchAPI"
+    articlesHeaders = {
+        "X-RapidAPI-Key": "93f54a6459msh59bc8a47596a61ep101d1bjsn5faeb09bd872",
+        "X-RapidAPI-Host": "contextualwebsearch-websearch-v1.p.rapidapi.com"
+    }
 
     def __init__(self):
         self.connection = db.engine
@@ -76,6 +84,24 @@ class Database():
                     dataframe = pd.concat([dataframe, self.getTickerData(ticker.lower())])
 
         return dataframe
+    
+    def updateArticlesTable(self, start=datetime.today(), end=datetime.today()):
+        query = {"q":"nyse and stock market","pageNumber":"1","pageSize":"50","autoCorrect":"true","withThumbnails":"false","fromPublishedDate": f"{start}","toPublishedDate":f"{end}"}
+        response = requests.get(self.articleURL, headers=self.articlesHeaders, params=query)
+        articles = response.json()
+        if (articles and articles['value']):
+            df = pd.DataFrame(articles['value'], columns=['id', 'title', 'description', 'body', 'datePublished'])
+            df.to_sql('articles', con=self.connection, if_exists='append', index=False)
+            # df.to_csv(outputDir / outputFile, sep="|", mode='a', index=False, header=False)
+
+    def updateSentimentsTable(self, start=datetime.today(), end=datetime.today()):
+        query = {"q":"nyse and stock market","pageNumber":"1","pageSize":"50","autoCorrect":"true","withThumbnails":"false","fromPublishedDate": f"{start}","toPublishedDate":f"{end}"}
+        response = requests.get(self.articleURL, headers=self.articlesHeaders, params=query)
+        articles = response.json()
+        if (articles and articles['value']):
+            df = pd.DataFrame(articles['value'], columns=['date', 'pos', 'neg', 'med'])
+            df.to_sql('sentiments', con=self.connection, if_exists='append', index=False)
+            # df.to_csv(outputDir / outputFile, sep="|", mode='a', index=False, header=False)
 
     def updateTickerTables(self, period, start=0, end=100):
         # print("updateTickerTables")
