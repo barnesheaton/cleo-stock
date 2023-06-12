@@ -98,17 +98,19 @@ class Database():
         df = pd.read_sql_table('articles', self.connection)
         # scores = []
         for index, row in df.iterrows():
-            textParam = row['title'] + row['description'] + row['body']
-            sanitizedText =re.sub("[@#%$*&87]", "", textParam, 0, re.IGNORECASE)
-            # print(f"Getting Sentiment scores for {sanitizedText}")
-            textResponse = requests.post(self.sentimentURL, data={"text": sanitizedText}, headers=self.textHeaders)
-            textSentiment = textResponse.json()
+            # No sentiment score for this row yet
+            if (row['pos'] == 0.0 and row['neg'] == 0.0  and row['mid'] == 0.0):
+                textParam = row['title'] + row['description'] + row['body']
+                sanitizedText =re.sub("[@#%$*&87]", "", textParam, 0, re.IGNORECASE)
+                # print(f"Getting Sentiment scores for {sanitizedText}")
+                textResponse = requests.post(self.sentimentURL, data={"text": sanitizedText}, headers=self.textHeaders)
+                textSentiment = textResponse.json()
 
-            pos = utils.p2f(textSentiment["pos_percent"])
-            neg = utils.p2f(textSentiment["neg_percent"])
-            mid = utils.p2f(textSentiment["mid_percent"])
+                pos = utils.p2f(textSentiment["pos_percent"])
+                neg = utils.p2f(textSentiment["neg_percent"])
+                mid = utils.p2f(textSentiment["mid_percent"])
 
-            self.updateArticleSentiment(row['id'], pos, neg, mid)
+                self.updateArticleSentiment(row['id'], pos, neg, mid)
 
     def updateArticlesTable(self, start=datetime.today(), end=datetime.today()):
         query = {"q":"nyse and stock market","pageNumber":"1","pageSize":"50","autoCorrect":"true","withThumbnails":"false","fromPublishedDate": f"{start}","toPublishedDate":f"{end}"}
