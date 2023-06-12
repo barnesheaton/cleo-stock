@@ -13,6 +13,9 @@ def intersection(lst1, lst2):
     lst3 = [value.lower() for value in lowerList(lst1) if value in lowerList(lst2)]
     return lst3
 
+def p2f(x):
+   return float(x.strip('%'))/100
+
 def xor(lst1, lst2):
     lst3 = [value.lower() for value in lowerList(lst1) if value not in lowerList(lst2)]
     return lst3

@@ -104,11 +104,11 @@ class Database():
             textResponse = requests.post(self.sentimentURL, data={"text": sanitizedText}, headers=self.textHeaders)
             textSentiment = textResponse.json()
 
-            self.updateArticleSentiment(row['id'], textSentiment["pos_percent"], textSentiment["neg_percent"], textSentiment["mid_percent"])
-            # scores.append([row['datePublished'], textSentiment["pos_percent"], textSentiment["neg_percent"], textSentiment["mid_percent"]])
+            pos = utils.p2f(textSentiment["pos_percent"])
+            neg = utils.p2f(textSentiment["neg_percent"])
+            mid = utils.p2f(textSentiment["mid_percent"])
 
-        # scoresDf = pd.DataFrame(scores, columns=['date', 'pos', 'neg', 'mid'])
-        # scoresDf.to_sql('sentiments', con=self.connection, if_exists='append', index=False)
+            self.updateArticleSentiment(row['id'], pos, neg, mid)
 
     def updateArticlesTable(self, start=datetime.today(), end=datetime.today()):
         query = {"q":"nyse and stock market","pageNumber":"1","pageSize":"50","autoCorrect":"true","withThumbnails":"false","fromPublishedDate": f"{start}","toPublishedDate":f"{end}"}
